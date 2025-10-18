@@ -1,0 +1,8 @@
+import type { Job, Middleware, Webhook } from '@/interfaces/facade'
+
+export interface IApp {
+  useMw (mw: Middleware): this
+  useJob (spec: string, job: Job): this
+  useWebhook (webhookId: string, webhook: Webhook): this
+  start (): void
+}
