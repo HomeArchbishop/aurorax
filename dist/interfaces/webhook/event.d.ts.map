@@ -1,0 +1,1 @@
+{"version":3,"file":"event.d.ts","sourceRoot":"","sources":["../../../src/interfaces/webhook/event.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,YAAY;IAC3B,SAAS,EAAE,MAAM,CAAA;IACjB,KAAK,EAAE,eAAe,CAAA;IACtB,IAAI,EAAE,WAAW,CAAA;CAClB"}

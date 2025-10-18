@@ -1,0 +1,1 @@
+export { WsReverseOnebotBridge } from './bridge';

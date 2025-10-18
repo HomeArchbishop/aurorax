@@ -1,0 +1,1 @@
+{"version":3,"file":"openai-adapter.d.ts","sourceRoot":"","sources":["../../../../../src/llm/internal/platform-adapters/openai/openai-adapter.ts"],"names":[],"mappings":"AAAA,OAAc,EAAE,KAAK,aAAa,EAAE,MAAM,OAAO,CAAA;AACjD,OAAO,KAAK,EAAE,wBAAwB,EAAE,eAAe,EAAE,MAAM,4CAA4C,CAAA;AAG3G,qBAAa,aAAc,YAAW,eAAe;IAC7C,WAAW,CAAE,MAAM,EAAE,wBAAwB,GAAG,OAAO,CAAC,aAAa,CAAC;CAmB7E"}

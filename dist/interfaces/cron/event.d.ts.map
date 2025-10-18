@@ -1,0 +1,1 @@
+{"version":3,"file":"event.d.ts","sourceRoot":"","sources":["../../../src/interfaces/cron/event.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,IAAI,EAAE,MAAM,iBAAiB,CAAA;AAE3C,MAAM,WAAW,SAAS;IACxB,IAAI,EAAE,IAAI,CAAA;IACV,SAAS,EAAE,MAAM,CAAA;CAClB"}

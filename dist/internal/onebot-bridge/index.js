@@ -1,0 +1,1 @@
+export { createOnebotBridge } from './factory';
