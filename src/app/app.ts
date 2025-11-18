@@ -1,5 +1,5 @@
 import { WebhookServer } from '@/internal/webhook-server'
-import type { IApp } from './interface'
+import type { Application } from './interface'
 import { type OnebotBridge, type OnebotBridgeType, createOnebotBridge } from '@/internal/onebot-bridge'
 import type { Job, Middleware, Webhook } from '@/interfaces/facade'
 import { WebhookTrigger, OnebotTrigger, CronTrigger } from '@/internal/triggers'
@@ -20,7 +20,7 @@ interface AppOptions {
   }
 }
 
-export class App implements IApp {
+export class App implements Application {
   readonly #onebotBridge: OnebotBridge
   readonly #webhookServer: WebhookServer
 
