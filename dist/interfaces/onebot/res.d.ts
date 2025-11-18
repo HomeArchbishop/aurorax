@@ -1,4 +1,4 @@
-import type { MessageReceive } from './message';
+import type { MessageReceive, MessageSegmentReceive } from './message';
 import type { ApiActionName } from './req';
 interface ResponseDataMap {
     send_private_msg: SendPrivateMsgResponseData;
@@ -102,7 +102,7 @@ export interface GetMsgResponseData {
     real_id: number;
     sender: Record<string, any>;
     raw_message: string;
-    message: MessageReceive;
+    message: MessageSegmentReceive[];
 }
 export interface GetForwardMsgResponseData {
     message: Array<{

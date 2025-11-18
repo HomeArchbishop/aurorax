@@ -1,4 +1,4 @@
-import type { IApp } from './interface';
+import type { Application } from './interface';
 import { type OnebotBridgeType } from '../internal/onebot-bridge';
 import type { Job, Middleware, Webhook } from '../interfaces/facade';
 import type { Spec } from '../internal/cron';
@@ -13,7 +13,7 @@ interface AppOptions {
         tokens: string[];
     };
 }
-export declare class App implements IApp {
+export declare class App implements Application {
     #private;
     constructor({ onebot, webhook }: AppOptions);
     useMw(mw: Middleware): this;
