@@ -41,10 +41,12 @@ export class MiddlewarePipeline implements Pipeline<OnebotEvent>, Pipeable<Onebo
       logger.debug(`${identifier} start`)
       await this.#middleware(ctx, next)
       logger.debug(`${identifier} end`)
-    } catch (err: any) {
-      logger.error(`${identifier} error: ${err.message}`)
+    } catch (err: unknown) {
       if (err instanceof Error) {
+        logger.error(`${identifier} error: ` + err.message)
         logger.error(err.stack)
+      } else {
+        logger.error(`${identifier} error: ${err}`)
       }
     }
   }

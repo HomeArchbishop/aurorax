@@ -33,10 +33,12 @@ export class WebhookPipeline implements Pipeline<WebhookEvent> {
       logger.debug(`${identifier} triggered and processing`)
       await this.#webhook(ctx)
       logger.debug(`${identifier} triggered successfully`)
-    } catch (err: any) {
-      logger.error(`${identifier} processing error: ` + err.message)
+    } catch (err: unknown) {
       if (err instanceof Error) {
+        logger.error(`${identifier} processing error: ` + err.message)
         logger.error(err.stack)
+      } else {
+        logger.error(`${identifier} processing error: ${err}`)
       }
     }
   }

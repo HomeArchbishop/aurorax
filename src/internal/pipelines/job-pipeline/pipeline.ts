@@ -33,10 +33,12 @@ export class JobPipeline implements Pipeline<CronEvent> {
       logger.debug(`${identifier} executed`)
       await this.#job(ctx)
       logger.debug(`${identifier} finished`)
-    } catch (err: any) {
-      logger.error(`${identifier} error: ` + err.message)
+    } catch (err: unknown) {
       if (err instanceof Error) {
+        logger.error(`${identifier} error: ` + err.message)
         logger.error(err.stack)
+      } else {
+        logger.error(`${identifier} error: ${err}`)
       }
     }
   }
