@@ -4,7 +4,7 @@
  * @param fn 要装饰的函数
  * @returns 装饰后的函数
  */
-export function disposablize<T extends (...args: any[]) => any> (fn: T): T {
+export function once<T extends (...args: any[]) => any> (fn: T): T {
   let executed = false
 
   return ((...args: Parameters<T>) => {

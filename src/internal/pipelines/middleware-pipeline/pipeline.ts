@@ -3,7 +3,7 @@ import type { EventMeta, Pipeable, Pipeline } from '../interface'
 import type { Context, Middleware } from '@/interfaces/facade'
 import type { OnebotBridge } from '@/internal/onebot-bridge'
 import { logger } from '@/internal/logger'
-import { disposablize } from '@/internal/utils/functional'
+import { once } from '@/internal/utils/functional'
 
 interface MiddlewarePipelineOptions {
   onebotBridge: OnebotBridge
@@ -36,7 +36,7 @@ export class MiddlewarePipeline implements Pipeline<OnebotEvent>, Pipeable<Onebo
       send: this.#onebotBridge.send,
       event,
     }
-    const next = disposablize(async () => { await this.#nextPipeline?.execute(event, meta) })
+    const next = once(async () => { await this.#nextPipeline?.execute(event, meta) })
     try {
       logger.debug(`${identifier} start`)
       await this.#middleware(ctx, next)
