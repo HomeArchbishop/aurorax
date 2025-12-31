@@ -3,7 +3,7 @@ import type { Trigger } from '../interface'
 import type { OnebotEvent } from '@/interfaces/onebot'
 import type { OnebotBridge } from '@/internal/onebot-bridge'
 import type { Pipeline } from '@/internal/pipelines'
-import { withCacheUntil } from '@/internal/utils/functional'
+import { queueUntil } from '@/internal/utils/functional'
 import { uid } from '@/internal/utils/misc'
 
 interface OnebotTriggerOptions {
@@ -29,7 +29,7 @@ export class OnebotTrigger implements Trigger<OnebotEvent> {
     }
     this.#pipelineGroups.push({ pipeline })
 
-    this.#onebotBridge.addOnebotEventListener(withCacheUntil(
+    this.#onebotBridge.addOnebotEventListener(queueUntil(
       () => this.#started,
       event => {
         const meta = { hash: uid() }
