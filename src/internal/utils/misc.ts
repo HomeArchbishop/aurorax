@@ -29,6 +29,6 @@ type TypeOfReturn = 'undefined' | 'object' | 'boolean' | 'number' | 'bigint' | '
 export function ensureType <T> (variable: unknown, type: TypeOfReturn): asserts variable is T {
   const typeOfVariable = typeof variable
   if (typeOfVariable !== type) {
-    throw new Error(`variable must be a ${type}`)
+    throw new Error(`variable must be a ${type}, but got ${typeOfVariable}`)
   }
 }
