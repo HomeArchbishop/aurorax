@@ -34,6 +34,7 @@ export function queueUntil<T extends (...args: any[]) => any> (
   }
   const interval = setInterval(() => {
     if (!condition()) { return }
+    clearInterval(interval)
     executeCache()
   }, 500)
   return ((...args: Parameters<T>) => {
