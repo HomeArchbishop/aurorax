@@ -27,12 +27,12 @@ export function withCacheUntil<T extends (...args: any[]) => any> (
   fn: T,
 ): T {
   const cache: Array<() => ReturnType<T>> = []
-  const excuteCache = () => {
+  const executeCache = () => {
     while (cache.length > 0) { cache.shift()?.() }
   }
   const interval = setInterval(() => {
     if (!condition()) { return }
-    excuteCache()
+    executeCache()
   }, 500)
   return ((...args: Parameters<T>) => {
     if (!condition()) {
@@ -40,7 +40,7 @@ export function withCacheUntil<T extends (...args: any[]) => any> (
       return
     }
     clearInterval(interval)
-    excuteCache()
+    executeCache()
     return fn(...args)
   }) as T
 }
