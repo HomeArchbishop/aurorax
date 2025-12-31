@@ -44,10 +44,13 @@ export class WebhookTrigger implements Trigger<WebhookEvent> {
       this.#pipelineGroups.forEach(({ pipeline, condition }) => {
         if (!condition(event)) { return }
         const meta = { hash: uid() }
-        pipeline.execute(event, meta)
+        // errors are handled by the pipeline,
+        // no need to await here, leave it async
+        pipeline.execute(event, meta).catch(() => null)
         executed = true
       })
       if (!executed) {
+        // will be handled by the webhook server (when the server emits 'webhook-event' event)
         throw new Error(`webhook ${event.webhookId} not found`)
       }
     })
