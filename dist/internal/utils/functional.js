@@ -4,7 +4,7 @@
  * @param fn 要装饰的函数
  * @returns 装饰后的函数
  */
-export function disposablize(fn) {
+export function once(fn) {
     let executed = false;
     return ((...args) => {
         if (executed) {
@@ -15,14 +15,16 @@ export function disposablize(fn) {
     });
 }
 /**
- * 缓存函数，直到条件为真时执行
+ * 函数装饰器，返回一个函数，
+ * 装饰后的函数被调用时，如果条件不满足，则将函数调用缓存起来，
+ * 直到条件满足时，缓存的函数调用会被依次执行。
  *
  * @param condition 条件
  * @param fn 要执行的函数
  */
-export function withCacheUntil(condition, fn) {
+export function queueUntil(condition, fn) {
     const cache = [];
-    const excuteCache = () => {
+    const executeCache = () => {
         while (cache.length > 0) {
             cache.shift()?.();
         }
@@ -31,7 +33,8 @@ export function withCacheUntil(condition, fn) {
         if (!condition()) {
             return;
         }
-        excuteCache();
+        clearInterval(interval);
+        executeCache();
     }, 500);
     return ((...args) => {
         if (!condition()) {
@@ -39,7 +42,7 @@ export function withCacheUntil(condition, fn) {
             return;
         }
         clearInterval(interval);
-        excuteCache();
+        executeCache();
         return fn(...args);
     });
 }

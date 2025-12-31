@@ -20,9 +20,12 @@ export class JobPipeline {
             logger.debug(`${identifier} finished`);
         }
         catch (err) {
-            logger.error(`${identifier} error: ` + err.message);
             if (err instanceof Error) {
+                logger.error(`${identifier} error: ` + err.message);
                 logger.error(err.stack);
+            }
+            else {
+                logger.error(`${identifier} error: ${err}`);
             }
         }
     }

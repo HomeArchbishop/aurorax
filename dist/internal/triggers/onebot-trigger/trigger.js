@@ -1,5 +1,5 @@
 import { logger } from '../../../internal/logger';
-import { withCacheUntil } from '../../../internal/utils/functional';
+import { queueUntil } from '../../../internal/utils/functional';
 import { uid } from '../../../internal/utils/misc';
 export class OnebotTrigger {
     #started = false;
@@ -13,9 +13,11 @@ export class OnebotTrigger {
             throw new Error('onebot trigger is already started, cannot connect more pipelines');
         }
         this.#pipelineGroups.push({ pipeline });
-        this.#onebotBridge.addOnebotEventListener(withCacheUntil(() => this.#started, event => {
+        this.#onebotBridge.addOnebotEventListener(queueUntil(() => this.#started, event => {
             const meta = { hash: uid() };
-            pipeline.execute(event, meta);
+            // errors are handled by the pipeline,
+            // no need to await here, leave it async
+            pipeline.execute(event, meta).catch(() => null);
         }));
     }
     start() {

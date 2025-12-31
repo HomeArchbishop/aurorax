@@ -21,6 +21,7 @@ export type MessageSegmentSend =
   | NodeSegment
   | XmlSegment
   | JsonSegment
+  | FileSegment
 
 export type MessageSegmentReceive =
   | TextSegment
@@ -38,6 +39,7 @@ export type MessageSegmentReceive =
   | ForwardSegment
   | XmlSegment
   | JsonSegment
+  | FileSegment
 
 // 纯文本
 export interface TextSegment {
@@ -223,5 +225,16 @@ export interface JsonSegment {
   type: 'json'
   data: {
     data: string
+  }
+}
+
+// 文件
+export interface FileSegment {
+  type: 'file'
+  data: {
+    file: string // 发送时: 文件路径、URL 或 Base64 编码; 接收时: 文件名
+    name?: string // 发送时: 文件名(可选)
+    file_id?: string // 接收时: 文件 ID
+    file_size?: number // 接收时: 文件大小(字节)
   }
 }

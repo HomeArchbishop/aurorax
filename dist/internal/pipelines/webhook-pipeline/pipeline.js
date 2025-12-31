@@ -20,9 +20,12 @@ export class WebhookPipeline {
             logger.debug(`${identifier} triggered successfully`);
         }
         catch (err) {
-            logger.error(`${identifier} processing error: ` + err.message);
             if (err instanceof Error) {
+                logger.error(`${identifier} processing error: ` + err.message);
                 logger.error(err.stack);
+            }
+            else {
+                logger.error(`${identifier} processing error: ${err}`);
             }
         }
     }

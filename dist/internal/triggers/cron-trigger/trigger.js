@@ -34,7 +34,9 @@ export class CronTrigger {
                         return;
                     }
                     const meta = { hash: uid() };
-                    pipeline.execute(event, meta);
+                    // errors are handled by the pipeline,
+                    // no need to await here, leave it async
+                    pipeline.execute(event, meta).catch(() => null);
                 });
             });
         });

@@ -1,7 +1,7 @@
 export type MessageSend = string | MessageSegmentSend[] | MessageSegmentSend;
 export type MessageReceive = string | MessageSegmentReceive[] | MessageSegmentReceive;
-export type MessageSegmentSend = TextSegment | FaceSegment | ImageSegment | RecordSegment | VideoSegment | AtSegment | RpsSegment | DiceSegment | ShakeSegment | PokeSegment | AnonymousSegment | ShareSegment | ContactSegment | LocationSegment | MusicSegment | ReplySegment | NodeSegment | XmlSegment | JsonSegment;
-export type MessageSegmentReceive = TextSegment | FaceSegment | ImageSegment | RecordSegment | VideoSegment | AtSegment | RpsSegment | DiceSegment | ShareSegment | ContactSegment | LocationSegment | ReplySegment | ForwardSegment | XmlSegment | JsonSegment;
+export type MessageSegmentSend = TextSegment | FaceSegment | ImageSegment | RecordSegment | VideoSegment | AtSegment | RpsSegment | DiceSegment | ShakeSegment | PokeSegment | AnonymousSegment | ShareSegment | ContactSegment | LocationSegment | MusicSegment | ReplySegment | NodeSegment | XmlSegment | JsonSegment | FileSegment;
+export type MessageSegmentReceive = TextSegment | FaceSegment | ImageSegment | RecordSegment | VideoSegment | AtSegment | RpsSegment | DiceSegment | ShareSegment | ContactSegment | LocationSegment | ReplySegment | ForwardSegment | XmlSegment | JsonSegment | FileSegment;
 export interface TextSegment {
     type: 'text';
     data: {
@@ -147,6 +147,15 @@ export interface JsonSegment {
     type: 'json';
     data: {
         data: string;
+    };
+}
+export interface FileSegment {
+    type: 'file';
+    data: {
+        file: string;
+        name?: string;
+        file_id?: string;
+        file_size?: number;
     };
 }
 //# sourceMappingURL=message.d.ts.map

@@ -1,5 +1,5 @@
 import { logger } from '../../../internal/logger';
-import { disposablize } from '../../../internal/utils/functional';
+import { once } from '../../../internal/utils/functional';
 export class MiddlewarePipeline {
     #middleware;
     #onebotBridge;
@@ -19,16 +19,19 @@ export class MiddlewarePipeline {
             send: this.#onebotBridge.send,
             event,
         };
-        const next = disposablize(async () => { await this.#nextPipeline?.execute(event, meta); });
+        const next = once(async () => { await this.#nextPipeline?.execute(event, meta); });
         try {
             logger.debug(`${identifier} start`);
             await this.#middleware(ctx, next);
             logger.debug(`${identifier} end`);
         }
         catch (err) {
-            logger.error(`${identifier} error: ${err.message}`);
             if (err instanceof Error) {
+                logger.error(`${identifier} error: ` + err.message);
                 logger.error(err.stack);
+            }
+            else {
+                logger.error(`${identifier} error: ${err}`);
             }
         }
     }
