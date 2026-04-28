@@ -6,6 +6,7 @@ export default withMermaid(
     title: 'Aurorax',
     description: '基于 OneBot 11 协议的 Node.js Bot 开发框架',
     lang: 'zh-CN',
+    base: '/aurorax/',
     themeConfig: {
       nav: [
         { text: '教程', link: '/tutorial/01-getting-started' },
