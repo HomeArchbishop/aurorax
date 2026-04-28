@@ -17,13 +17,19 @@
     "@types/ws": "^8.18.0",
     "eslint": "^9.33.0",
     "knip": "^5.64.0",
+    "mermaid": "^11.14.0",
     "neostandard": "^0.12.2",
     "tsc-alias": "^1.8.16",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "vitepress": "^1.6.4",
+    "vitepress-plugin-mermaid": "^2.0.17"
   },
   "scripts": {
     "dev": "tsc --watch & tsc-alias --watch",
     "check": "knip",
-    "build": "knip && tsc --build && tsc-alias"
+    "build": "knip && tsc --build && tsc-alias",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs"
   }
 }

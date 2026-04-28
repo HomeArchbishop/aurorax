@@ -1,8 +1,40 @@
-# Aurorax - Programming Bot Framework for node.js
+# Aurorax
 
-Aurorax 采用类似 Koa.js 的中间件模式，以极低的心智负担开发 Bot。
+[![npm version](https://img.shields.io/npm/v/aurorax)](https://www.npmjs.com/package/aurorax)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-ESM-339933)](https://nodejs.org/)
 
-框架基于 [OneBot11 标准协议](https://github.com/botuniverse/onebot-11)。 [OneBot12](https://12.onebot.dev/) 标准协议正在候选阶段，且 OneBot12 的实现较少。因此本框架不支持 OneBot12。
+基于 [OneBot 11](https://github.com/botuniverse/onebot-11) 协议的 Node.js Bot 开发框架，采用类 Koa 中间件模式，以极低心智负担构建功能丰富的聊天机器人。
+
+---
+
+## 特性
+
+- **中间件管道** — 类 Koa 的 `async/await` 中间件链，支持 `next()` 控制流
+- **定时任务** — 基于 cron 表达式的任务调度
+- **Webhook 集成** — 内置 HTTP 服务器，轻松接入 GitHub、GitLab 等外部服务
+- **完整类型支持** — 完整的 TypeScript 类型定义，IDE 友好
+- **链式 API** — 流畅的链式调用风格 `app.useMw(...).useMw(...).useJob(...)`
+- **日志系统** — 内置 Winston 日志，支持按日滚动文件
+
+---
+
+## 安装
+
+```bash
+npm install aurorax
+# 或
+bun add aurorax
+```
+
+> **要求**：Node.js 18+，TypeScript 5.x（推荐），ESM 模块
+
+---
+
+## 快速开始
+
+### 1. 创建应用实例
 
 ```typescript
 import { App } from 'aurorax'
@@ -11,212 +43,192 @@ const app = new App({
   onebot: {
     type: 'ws-reverse',
     url: 'ws://localhost:8080',
-    token: 'your-token'
+    token: 'your-token'  // 可选
   }
 })
+```
 
-// 添加中间件 - 类似 Koa 的 app.use()
-app.useMw(async (ctx, next) => {
-  console.log('收到消息:', ctx.event)
-  await next() // 继续执行下一个中间件
-})
+### 2. 添加中间件
 
-// 消息处理中间件
+```typescript
+// 日志中间件
 app.useMw(async (ctx, next) => {
-  if (ctx.event.message === '你好') {
-    await ctx.send('你好！我是 Aurorax 机器人')
-  }
+  console.log(`[${ctx.event.post_type}] 来自 ${ctx.event.user_id}`)
   await next()
 })
 
-// 启动机器人
+// 回复中间件
+app.useMw(async (ctx, next) => {
+  if (ctx.event.message === 'ping') {
+    ctx.send({ action: 'send_private_msg', params: {
+      user_id: ctx.event.user_id,
+      message: 'pong'
+    }})
+  }
+  await next()
+})
+```
+
+### 3. 启动
+
+```typescript
 await app.start()
 ```
 
-### 定时任务
+---
+
+## 核心 API
+
+### `new App(options)`
+
+| 选项 | 类型 | 说明 |
+|------|------|------|
+| `onebot.type` | `'ws-reverse'` | OneBot 连接方式 |
+| `onebot.url` | `string` | WebSocket 地址 |
+| `onebot.token` | `string?` | 鉴权 Token（可选） |
+| `webhook.port` | `number?` | Webhook 监听端口（默认 3000） |
+| `webhook.tokens` | `string[]?` | Webhook 鉴权 Token 列表 |
+
+### `app.useMw(middleware)`
+
+注册 OneBot 事件中间件。所有中间件按注册顺序组成处理链。
 
 ```typescript
-// 每天上午 9 点发送问候
+type Middleware = (
+  ctx: Readonly<Context<OnebotEvent>>,
+  next: () => Promise<void>
+) => Promise<void>
+```
+
+### `app.useJob(spec, job)`
+
+注册 cron 定时任务。`spec` 为标准 5 字段 cron 表达式。
+
+```typescript
 app.useJob('0 9 * * *', async (ctx) => {
-  await ctx.send('早上好！新的一天开始了！')
-})
-
-// 每 5 分钟检查一次
-app.useJob('*/5 * * * *', async (ctx) => {
-  // 执行定期检查逻辑
-  console.log('执行定期检查...')
+  // ctx.event.timestamp — 触发时间戳
+  // ctx.event.spec — cron 表达式
 })
 ```
 
-### Webhook 集成
+### `app.useWebhook(webhookId, handler)`
+
+注册 Webhook 处理器。`webhookId` 对应请求路径中的标识符。
 
 ```typescript
-// 添加 webhook 支持
-const app = new App({
-  onebot: {
-    type: 'ws-reverse',
-    url: 'ws://localhost:8080/ws'
-  },
-  webhook: {
-    port: 3000,
-    tokens: ['your-webhook-token']
-  }
-})
-
-// 处理 webhook 事件
 app.useWebhook('github', async (ctx) => {
-  const event = ctx.event
-  if (event.type === 'push') {
-    await ctx.send(`收到新的代码推送: ${event.repository.name}`)
-  }
+  // ctx.event.webhookId — 'github'
+  // ctx.event.query — URLSearchParams
+  // ctx.event.body — ArrayBuffer
 })
 ```
 
-## 中间件模式
+### `app.start()`
 
-Aurorax 采用类似 Koa 的中间件模式，让你能够：
+建立 OneBot WebSocket 连接，启动 cron 调度器，并在注册了 webhook 处理器时启动 HTTP 服务器。
 
-### 1. 链式调用
-```typescript
-app
-  .useMw(loggerMiddleware)
-  .useMw(authMiddleware)
-  .useMw(messageHandler)
-  .useJob('0 0 * * *', dailyTask)
-```
+---
 
-### 2. 中间件组合
-```typescript
-// 日志中间件
-const logger = async (ctx, next) => {
-  console.log(`[${new Date().toISOString()}] 收到事件:`, ctx.event.type)
-  await next()
-  console.log('处理完成')
-}
+## 使用示例
 
-// 权限检查中间件
-const auth = async (ctx, next) => {
-  if (ctx.event.user_id === 'admin') {
-    await next()
-  } else {
-    await ctx.send('权限不足')
-  }
-}
+### 错误处理中间件
 
-app.useMw(logger).useMw(auth)
-```
-
-### 3. 错误处理
-```typescript
-const errorHandler = async (ctx, next) => {
-  try {
-    await next()
-  } catch (error) {
-    console.error('处理消息时出错:', error)
-    await ctx.send('抱歉，处理您的消息时出现了错误')
-  }
-}
-
-app.useMw(errorHandler)
-```
-
-## 事件类型
-
-### OneBot 事件
 ```typescript
 app.useMw(async (ctx, next) => {
-  const event = ctx.event
-  
-  switch (event.type) {
-    case 'message':
-      // 处理消息
-      break
-    case 'notice':
-      // 处理通知
-      break
-    case 'request':
-      // 处理请求
-      break
+  try {
+    await next()
+  } catch (err) {
+    console.error('处理异常:', err)
   }
-  
-  await next()
 })
 ```
 
-### Cron 事件
-```typescript
-app.useJob('0 */6 * * *', async (ctx) => {
-  // 每 6 小时执行一次
-  console.log('定时任务执行时间:', ctx.event.timestamp)
-})
-```
+### 限流中间件工厂
 
-### Webhook 事件
 ```typescript
-app.useWebhook('custom', async (ctx) => {
-  const payload = ctx.event.payload
-  // 处理自定义 webhook 数据
-})
-```
+function rateLimit(maxPerMinute: number) {
+  const counters = new Map<number, number[]>()
 
-## 高级用法
-
-### 自定义中间件工厂
-```typescript
-function createRateLimit(maxRequests: number) {
-  const requests = new Map()
-  
-  return async (ctx, next) => {
-    const userId = ctx.event.user_id
+  return async (ctx: Context<OnebotEvent>, next: () => Promise<void>) => {
+    const uid = ctx.event.user_id
     const now = Date.now()
-    const userRequests = requests.get(userId) || []
-    
-    // 清理过期请求
-    const validRequests = userRequests.filter((time: number) => now - time < 60000)
-    
-    if (validRequests.length >= maxRequests) {
-      await ctx.send('请求过于频繁，请稍后再试')
-      return
-    }
-    
-    validRequests.push(now)
-    requests.set(userId, validRequests)
-    
+    const hits = (counters.get(uid) ?? []).filter(t => now - t < 60_000)
+
+    if (hits.length >= maxPerMinute) return
+    counters.set(uid, [...hits, now])
     await next()
   }
 }
 
-app.useMw(createRateLimit(10)) // 每分钟最多 10 次请求
+app.useMw(rateLimit(10))
 ```
 
-### 条件中间件
+### Webhook 接收 GitHub Push
+
 ```typescript
-function when(condition: (ctx: Context) => boolean, middleware: Middleware) {
-  return async (ctx, next) => {
-    if (condition(ctx)) {
-      await middleware(ctx, next)
-    } else {
-      await next()
-    }
-  }
-}
+const app = new App({
+  onebot: { type: 'ws-reverse', url: 'ws://localhost:8080' },
+  webhook: { port: 3000, tokens: ['secret'] }
+})
 
-// 只在群聊中生效
-app.useMw(
-  when(
-    (ctx) => ctx.event.message_type === 'group',
-    async (ctx, next) => {
-      // 群聊专用逻辑
-      await next()
-    }
-  )
-)
+app.useWebhook('github', async (ctx) => {
+  const payload = JSON.parse(new TextDecoder().decode(ctx.event.body))
+  if (payload.ref === 'refs/heads/main') {
+    ctx.send({
+      action: 'send_group_msg',
+      params: { group_id: 123456, message: `${payload.pusher.name} 推送了新代码` }
+    })
+  }
+})
+
+await app.start()
 ```
+
+---
+
+## 项目结构
+
+```
+src/
+├── app/                    # App 主类
+├── interfaces/             # 公开类型定义
+│   ├── onebot/             # OneBot 事件 & API 类型
+│   ├── cron/               # Cron 事件类型
+│   ├── webhook/            # Webhook 事件类型
+│   └── facade/             # 用户侧 Middleware/Job/Webhook 类型
+└── internal/               # 内部实现（不暴露）
+    ├── onebot-bridge/      # WebSocket 连接管理
+    ├── pipelines/          # 中间件/任务/Webhook 管道
+    ├── triggers/           # 事件触发器
+    ├── webhook-server/     # HTTP 服务器
+    └── cron/               # Cron 调度器
+```
+
+---
 
 ## 文档
 
-更多详细文档请查看 [docs/](./docs/) 目录。
+### 使用教程
+
+| 文档 | 说明 |
+|------|------|
+| [快速开始](./docs/tutorial/01-getting-started.md) | 从零搭建第一个 Bot |
+| [中间件模式](./docs/tutorial/02-middleware.md) | 深入理解中间件 |
+| [事件处理](./docs/tutorial/03-event-handling.md) | 处理各类 OneBot 事件 |
+| [定时任务](./docs/tutorial/04-cron-jobs.md) | 使用 cron 调度任务 |
+| [Webhook 集成](./docs/tutorial/05-webhooks.md) | 接入外部 Webhook |
+
+### 开发
+
+| 文档 | 说明 |
+|------|------|
+| [架构概览](./docs/dev/architecture-overview.md) | 系统架构与启动流程 |
+| [接口与组件](./docs/dev/interfaces-and-components.md) | 类图、接口签名与组件关系 |
+| [数据流](./docs/dev/data-flow.md) | 事件数据流向详解 |
+| [设计决策](./docs/dev/design-decisions.md) | 关键设计选择及其原因 |
+
+---
 
 ## 许可证
 
-AGPL-3.0
+[AGPL-3.0](./LICENSE)
