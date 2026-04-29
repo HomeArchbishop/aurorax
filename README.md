@@ -1,6 +1,5 @@
 <div align="center">
-    <img src="./docs/public/aurorax-musume.png" alt="Aurorax" width="50%">
-    <h1>Aurorax</h1>
+    <img src="./docs/public/aurorax-header.png" alt="Aurorax" width="100%">
 </div>
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge)](./LICENSE)
