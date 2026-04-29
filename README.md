@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./docs/public/aurorax-musume.png" alt="Aurorax" width="100%">
+    <img src="./docs/public/aurorax-musume.png" alt="Aurorax" width="50%">
     <h1>Aurorax</h1>
 </div>
 
