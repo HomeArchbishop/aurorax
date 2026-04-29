@@ -1,13 +1,19 @@
 import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
+const base = '/aurorax/'
+
 export default withMermaid(
   defineConfig({
     title: 'Aurorax',
     description: '基于 OneBot 11 协议的 Node.js Bot 开发框架',
     lang: 'zh-CN',
-    base: '/aurorax/',
+    base,
+    head: [
+      ['link', { rel: 'icon', href: `${base}favicon.ico` }],
+    ],
     themeConfig: {
+      logo: '/aurorax-musume.png',
       nav: [
         { text: '教程', link: '/tutorial/01-getting-started' },
         { text: 'API', link: '/api/' },

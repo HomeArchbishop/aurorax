@@ -4,7 +4,7 @@
 
 ## 前置条件
 
-- BunNode.js 18+（推荐 LTS）
+- Bun / Node.js 18+（推荐 LTS）
 - 一个运行中的 OneBot 实现（如 [Lagrange.Core](https://github.com/LagrangeDev/Lagrange.Core)、[NapCat](https://github.com/NapNeko/NapCatQQ) 等）
 
 ## 第一步：创建项目

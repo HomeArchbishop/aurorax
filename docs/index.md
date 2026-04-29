@@ -3,8 +3,10 @@ layout: home
 
 hero:
   name: Aurorax
-  text: OneBot 11 Bot 编程开发框架
-  tagline: 类 Koa 中间件模式，以极低心智负担构建功能丰富的聊天机器人
+  text: 中间件模式的 OneBot 11 编程框架
+  image:
+    src: /aurorax-musume.png
+    alt: Aurorax
   actions:
     - theme: brand
       text: 快速开始

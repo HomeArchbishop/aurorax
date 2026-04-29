@@ -1,9 +1,11 @@
-# Aurorax
+<div align="center">
+    <img src="./docs/public/aurorax-musume.png" alt="Aurorax" width="100%">
+    <h1>Aurorax</h1>
+</div>
 
-[![npm version](https://img.shields.io/npm/v/aurorax)](https://www.npmjs.com/package/aurorax)
-[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](./LICENSE)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-ESM-339933)](https://nodejs.org/)
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-339933?style=for-the-badge)](https://bun.sh/)
 
 基于 [OneBot 11](https://github.com/botuniverse/onebot-11) 协议的 Node.js Bot 开发框架，采用类 Koa 中间件模式，以极低心智负担构建功能丰富的聊天机器人。
 
@@ -208,24 +210,11 @@ src/
 
 ## 文档
 
-### 使用教程
+[快速开始](https://homearchbishop.github.io/aurorax/tutorial/01-getting-started) - 从零搭建第一个 Bot
 
-| 文档 | 说明 |
-|------|------|
-| [快速开始](./docs/tutorial/01-getting-started.md) | 从零搭建第一个 Bot |
-| [中间件模式](./docs/tutorial/02-middleware.md) | 深入理解中间件 |
-| [事件处理](./docs/tutorial/03-event-handling.md) | 处理各类 OneBot 事件 |
-| [定时任务](./docs/tutorial/04-cron-jobs.md) | 使用 cron 调度任务 |
-| [Webhook 集成](./docs/tutorial/05-webhooks.md) | 接入外部 Webhook |
+[API 参考](https://homearchbishop.github.io/aurorax/api/)
 
-### 开发
-
-| 文档 | 说明 |
-|------|------|
-| [架构概览](./docs/dev/architecture-overview.md) | 系统架构与启动流程 |
-| [接口与组件](./docs/dev/interfaces-and-components.md) | 类图、接口签名与组件关系 |
-| [数据流](./docs/dev/data-flow.md) | 事件数据流向详解 |
-| [设计决策](./docs/dev/design-decisions.md) | 关键设计选择及其原因 |
+[参与开发](https://homearchbishop.github.io/aurorax/dev/architecture-overview)
 
 ---
 
