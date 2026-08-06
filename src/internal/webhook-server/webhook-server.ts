@@ -21,7 +21,7 @@ export class WebhookServer extends EventEmitter {
   }
 
   #body (req: http.IncomingMessage): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       const chunks: Buffer[] = []
       req.on('data', (chunk) => {
         chunks.push(chunk)

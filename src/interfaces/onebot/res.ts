@@ -144,11 +144,11 @@ export interface GetStrangerInfoResponseData {
 }
 
 // 获取好友列表
-export interface GetFriendListResponseData {
+export type GetFriendListResponseData = Array<{
   user_id: number
   nickname: string
   remark: string
-}
+}>
 
 // 获取群信息
 export interface GetGroupInfoResponseData {
