@@ -1,6 +1,6 @@
-import type { IApp } from './interface';
-import { type OnebotBridgeType } from '../internal/onebot-bridge';
-import type { Job, Middleware, Webhook } from '../interfaces/facade';
+import type { IApp } from './interface.js';
+import { type OnebotBridgeType } from '../internal/onebot-bridge/index.js';
+import type { Job, Middleware, Webhook } from '../interfaces/facade/index.js';
 interface ApplicationOptions {
     onebot: {
         type: OnebotBridgeType;

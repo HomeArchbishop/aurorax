@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { OpenaiAdapter, SiliconflowAdapter } from './internal/platform-adapters';
-import { KeyPool } from './internal/key-pool';
+import { OpenaiAdapter, SiliconflowAdapter } from './internal/platform-adapters/index.js';
+import { KeyPool } from './internal/key-pool/index.js';
 export class LLM {
     #isInitialized = false;
     #keys;

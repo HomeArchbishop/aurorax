@@ -1,4 +1,4 @@
-import { type ApiRequest } from '../interfaces/onebot/req';
+import { type ApiRequest } from '../interfaces/onebot/req.js';
 export type ReplyRequestSplits = string | Omit<ApiRequest, 'echo'>;
 export interface DBKey {
     history: string;

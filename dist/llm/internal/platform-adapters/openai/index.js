@@ -1,1 +1,1 @@
-export { OpenaiAdapter } from './openai-adapter';
+export { OpenaiAdapter } from './openai-adapter.js';

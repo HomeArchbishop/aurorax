@@ -1,8 +1,8 @@
-import { WebhookServer } from '../internal/webhook-server';
-import { createOnebotBridge } from '../internal/onebot-bridge';
-import { WebhookTrigger, OnebotTrigger, CronTrigger } from '../internal/triggers';
-import { MiddlewarePipeline, JobPipeline, WebhookPipeline } from '../internal/pipelines';
-import { logger } from '../internal/logger';
+import { WebhookServer } from '../internal/webhook-server/index.js';
+import { createOnebotBridge } from '../internal/onebot-bridge/index.js';
+import { WebhookTrigger, OnebotTrigger, CronTrigger } from '../internal/triggers/index.js';
+import { MiddlewarePipeline, JobPipeline, WebhookPipeline } from '../internal/pipelines/index.js';
+import { logger } from '../internal/logger/index.js';
 export class Application {
     #onebotBridge;
     #webhookServer;

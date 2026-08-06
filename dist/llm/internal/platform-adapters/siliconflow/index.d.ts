@@ -1,2 +1,2 @@
-export { SiliconflowAdapter } from './siliconflow-adapter';
+export { SiliconflowAdapter } from './siliconflow-adapter.js';
 //# sourceMappingURL=index.d.ts.map

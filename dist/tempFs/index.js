@@ -1,1 +1,1 @@
-export { createTempFs } from './fs';
+export { createTempFs } from './fs.js';

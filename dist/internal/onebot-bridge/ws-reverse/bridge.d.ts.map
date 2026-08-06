@@ -1,1 +1,1 @@
-{"version":3,"file":"bridge.d.ts","sourceRoot":"","sources":["../../../../src/internal/onebot-bridge/ws-reverse/bridge.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAA6C,uBAAuB,EAAwB,MAAM,cAAc,CAAA;AAI5H,eAAO,MAAM,qBAAqB,EAAE,uBAyEnC,CAAA"}
+{"version":3,"file":"bridge.d.ts","sourceRoot":"","sources":["../../../../src/internal/onebot-bridge/ws-reverse/bridge.ts"],"names":[],"mappings":"AAGA,OAAO,KAAK,EAA6C,uBAAuB,EAAwB,MAAM,cAAc,CAAA;AAM5H,eAAO,MAAM,qBAAqB,EAAE,uBA4GnC,CAAA"}

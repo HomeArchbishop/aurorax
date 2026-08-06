@@ -1,1 +1,1 @@
-export { KeyPool } from './key-pool';
+export { KeyPool } from './key-pool.js';

@@ -1,5 +1,5 @@
 import type { AxiosResponse } from 'axios';
-import type { LlmInputMessage } from '../../../llm/interface';
+import type { LlmInputMessage } from '../../../llm/interface.js';
 export interface AdapterCompletionsParams {
     apiHost: string;
     key: string;

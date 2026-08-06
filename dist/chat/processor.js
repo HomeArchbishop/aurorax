@@ -1,5 +1,5 @@
-import { Preset } from './preset';
-import {} from './share';
+import { Preset } from './preset.js';
+import {} from './share.js';
 export function createPresetPreprocessor(p) {
     return p;
 }

@@ -1,1 +1,1 @@
-export { createTempDir } from './dir';
+export { createTempDir } from './dir.js';

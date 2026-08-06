@@ -1,2 +1,2 @@
-export { OpenaiAdapter } from './openai';
-export { SiliconflowAdapter } from './siliconflow';
+export { OpenaiAdapter } from './openai/index.js';
+export { SiliconflowAdapter } from './siliconflow/index.js';

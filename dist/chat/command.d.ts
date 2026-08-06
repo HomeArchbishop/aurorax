@@ -1,10 +1,10 @@
-import type { DBKey } from './share';
-import type { LLM } from '../llm';
-import type { ApiRequest } from '../interfaces/onebot/req';
-import type { ChatMiddleware } from './chat';
-import type { Context } from '../interfaces/facade';
-import type { OnebotEvent } from '../interfaces/onebot/event';
-import type { Db } from '../db';
+import type { DBKey } from './share.js';
+import type { LLM } from '../llm/index.js';
+import type { ApiRequest } from '../interfaces/onebot/req.js';
+import type { ChatMiddleware } from './chat.js';
+import type { Context } from '../interfaces/facade/index.js';
+import type { OnebotEvent } from '../interfaces/onebot/event.js';
+import type { Db } from '../db/index.js';
 type CommandPattern = string | RegExp | Array<string | RegExp>;
 export interface CommandCallbackCtx extends Context<OnebotEvent> {
     db: Db;

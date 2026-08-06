@@ -1,1 +1,1 @@
-export { SiliconflowAdapter } from './siliconflow-adapter';
+export { SiliconflowAdapter } from './siliconflow-adapter.js';

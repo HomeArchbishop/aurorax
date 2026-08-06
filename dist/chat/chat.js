@@ -7,14 +7,14 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { createMiddleware } from '../app';
-import { Preset } from './preset';
-import {} from '../interfaces/onebot/req';
-import {} from '../llm';
-import {} from '../interfaces/facade';
-import { createCommandRegistrar, } from './command';
-import {} from './processor';
-import {} from './share';
+import { createMiddleware } from '../app/index.js';
+import { Preset } from './preset.js';
+import {} from '../interfaces/onebot/req.js';
+import {} from '../llm/index.js';
+import {} from '../interfaces/facade/index.js';
+import { createCommandRegistrar, } from './command.js';
+import {} from './processor.js';
+import {} from './share.js';
 export var ChatMode;
 (function (ChatMode) {
     ChatMode[ChatMode["Normal"] = 0] = "Normal";

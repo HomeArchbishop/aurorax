@@ -1,5 +1,5 @@
 import axios, {} from 'axios';
-import { buildUrl } from '../../../../internal/utils/url';
+import { buildUrl } from '../../../../internal/utils/url.js';
 export class SiliconflowAdapter {
     async completions(params) {
         return await axios.request({

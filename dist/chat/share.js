@@ -1,1 +1,1 @@
-import {} from '../interfaces/onebot/req';
+import {} from '../interfaces/onebot/req.js';

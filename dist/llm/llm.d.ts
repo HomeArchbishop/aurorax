@@ -1,5 +1,5 @@
-import type { LlmPlatform, LlmInputMessage } from './interface';
-import { type KeyObject } from './internal/key-pool';
+import type { LlmPlatform, LlmInputMessage } from './interface.js';
+import { type KeyObject } from './internal/key-pool/index.js';
 interface LlmOptions {
     platform: LlmPlatform;
     apiHost: string;

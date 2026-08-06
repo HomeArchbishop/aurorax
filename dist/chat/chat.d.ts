@@ -1,9 +1,9 @@
-import { Preset } from './preset';
-import { type LLM } from '../llm';
-import { type Middleware } from '../interfaces/facade';
-import { type CommandRegistrar } from './command';
-import { type PresetPreprocessorFn, type ReplyProcessorFn } from './processor';
-import type { Db } from '../db';
+import { Preset } from './preset.js';
+import { type LLM } from '../llm/index.js';
+import { type Middleware } from '../interfaces/facade/index.js';
+import { type CommandRegistrar } from './command.js';
+import { type PresetPreprocessorFn, type ReplyProcessorFn } from './processor.js';
+import type { Db } from '../db/index.js';
 interface EableGroupOptions {
     rate: number;
     replyOnAt: boolean;
