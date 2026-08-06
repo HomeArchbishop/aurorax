@@ -13,6 +13,11 @@ interface AppOptions {
     type: OnebotBridgeType
     url: string
     token?: string
+    timeout?: number
+    reconnect?: {
+      maxAttempts?: number
+      retryIntervalMs?: number
+    }
   }
   webhook?: {
     port: number
@@ -37,9 +42,11 @@ export class App implements Application {
       type: onebot.type,
       url: onebot.url,
       token: onebot.token,
+      timeout: onebot.timeout,
+      reconnect: onebot.reconnect,
     })
     this.#webhookServer = new WebhookServer({
-      port: webhook?.port ?? 3000,
+      port: webhook?.port ?? (Number(process.env.AURORAX_WEBHOOK_PORT) ?? 3000),
       tokens: webhook?.tokens ?? [],
     })
 
