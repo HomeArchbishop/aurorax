@@ -2,8 +2,7 @@ import { Command } from 'commander';
 import inquirer from 'inquirer';
 import { promises as fs } from 'fs';
 import path from 'path';
-import { entryTemplate, pkgTemplate, readmeTemplate, templateTypes } from '../templates';
-const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun'];
+import { entryTemplate, pkgTemplate, readmeTemplate, templateTypes, packageManagers, } from '../templates';
 function isInteractive() {
     return process.stdin.isTTY === true && process.stdout.isTTY === true;
 }
@@ -43,7 +42,7 @@ export function initCommand() {
                     type: 'select',
                     name: 'packageManager',
                     message: 'Select package manager:',
-                    choices: PACKAGE_MANAGERS,
+                    choices: packageManagers,
                     default: 'npm',
                 },
                 {
@@ -67,12 +66,13 @@ export function initCommand() {
         await fs.mkdir(target, { recursive: true });
         const name = path.basename(target);
         const entryName = `index.${type}`;
+        const pm = packageManagers.includes(answers.packageManager)
+            ? answers.packageManager
+            : 'npm';
         await fs.writeFile(path.join(target, entryName), entryTemplate(name, type, answers.includeWebhook));
-        await fs.writeFile(path.join(target, 'package.json'), pkgTemplate(name, type));
-        await fs.writeFile(path.join(target, 'README.md'), readmeTemplate());
-        const pm = answers.packageManager;
-        const run = pm === 'npm' || pm === 'bun' ? 'run' : '';
-        const runDev = run ? `${run} dev` : 'dev';
+        await fs.writeFile(path.join(target, 'package.json'), pkgTemplate(name, type, pm));
+        await fs.writeFile(path.join(target, 'README.md'), readmeTemplate(pm));
+        const runDev = pm === 'npm' || pm === 'bun' ? 'run dev' : 'dev';
         console.log('\n  aurorax project ready!');
         console.log('  ────────────────────────────────');
         console.log(`  Template         ${type}`);

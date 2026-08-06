@@ -32,40 +32,49 @@ ${includeWebhook ? webhookBody('github') : ''}await app.start()
 const templates = {
     js: {
         entry: (name, includeWebhook) => `${entryBody(name, includeWebhook)}\n`,
-        scripts: {
-            start: 'node index.js',
-            dev: 'node --watch index.js',
-        },
     },
     ts: {
         entry: (name, includeWebhook) => `${entryBody(name, includeWebhook)}\n`,
-        scripts: {
-            start: 'node --experimental-strip-types index.ts',
-            dev: 'node --watch --experimental-strip-types index.ts',
-        },
     },
 };
 export const templateTypes = Object.keys(templates);
+export const packageManagers = ['npm', 'pnpm', 'yarn', 'bun'];
+function scriptsFor(pm, type) {
+    const entry = `index.${type}`;
+    if (pm === 'bun') {
+        return { start: `bun ${entry}`, dev: `bun --watch ${entry}` };
+    }
+    if (type === 'ts') {
+        return {
+            start: `node --experimental-strip-types ${entry}`,
+            dev: `node --watch --experimental-strip-types ${entry}`,
+        };
+    }
+    return { start: `node ${entry}`, dev: `node --watch ${entry}` };
+}
 export function entryTemplate(name, type, includeWebhook = false) {
     return templates[type].entry(name, includeWebhook);
 }
-export function pkgTemplate(name, type) {
+export function pkgTemplate(name, type, pm = 'npm') {
     return JSON.stringify({
         name,
         version: '1.0.0',
         type: 'module',
         dependencies: { aurorax: '^1.0.0' },
-        scripts: templates[type].scripts,
+        scripts: scriptsFor(pm, type),
     }, null, 2);
 }
-export const readmeTemplate = () => `# Aurorax Bot
+export function readmeTemplate(pm = 'npm') {
+    const runDev = pm === 'npm' || pm === 'bun' ? `${pm} run dev` : `${pm} dev`;
+    return `# Aurorax Bot
 
 基于 aurorax 的轻量级 Bot 框架
 
 ## 快速开始
 
 \`\`\`bash
-npm install
-npm start
+${pm} install
+${runDev}
 \`\`\`
 `;
+}

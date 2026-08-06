@@ -2,17 +2,23 @@ import { Command } from 'commander'
 import inquirer from 'inquirer'
 import { promises as fs } from 'fs'
 import path from 'path'
-import { entryTemplate, pkgTemplate, readmeTemplate, type TemplateType, templateTypes } from '../templates'
+import {
+  entryTemplate,
+  pkgTemplate,
+  readmeTemplate,
+  type TemplateType,
+  type PackageManager,
+  templateTypes,
+  packageManagers,
+} from '../templates'
 
 interface InitAnswers {
   dir: string
   template: string
   includeWebhook: boolean
   installDeps: boolean
-  packageManager: string
+  packageManager: PackageManager
 }
-
-const PACKAGE_MANAGERS = ['npm', 'pnpm', 'yarn', 'bun']
 
 function isInteractive (): boolean {
   return process.stdin.isTTY === true && process.stdout.isTTY === true
@@ -53,7 +59,7 @@ export function initCommand (): Command {
             type: 'select',
             name: 'packageManager',
             message: 'Select package manager:',
-            choices: PACKAGE_MANAGERS,
+            choices: packageManagers,
             default: 'npm',
           },
           {
@@ -78,13 +84,14 @@ export function initCommand (): Command {
       await fs.mkdir(target, { recursive: true })
       const name = path.basename(target)
       const entryName = `index.${type}`
+      const pm = packageManagers.includes(answers.packageManager)
+        ? answers.packageManager
+        : 'npm'
       await fs.writeFile(path.join(target, entryName), entryTemplate(name, type, answers.includeWebhook))
-      await fs.writeFile(path.join(target, 'package.json'), pkgTemplate(name, type))
-      await fs.writeFile(path.join(target, 'README.md'), readmeTemplate())
+      await fs.writeFile(path.join(target, 'package.json'), pkgTemplate(name, type, pm))
+      await fs.writeFile(path.join(target, 'README.md'), readmeTemplate(pm))
 
-      const pm = answers.packageManager
-      const run = pm === 'npm' || pm === 'bun' ? 'run' : ''
-      const runDev = run ? `${run} dev` : 'dev'
+      const runDev = pm === 'npm' || pm === 'bun' ? 'run dev' : 'dev'
 
       console.log('\n  aurorax project ready!')
       console.log('  ────────────────────────────────')
