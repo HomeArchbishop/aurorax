@@ -6,3 +6,10 @@ node_modules
 
 docs/.vitepress/cache
 docs/.vitepress/dist
+
+packages/bot/napcat/QQ
+packages/bot/napcat/config/napcat.json
+packages/bot/napcat/config/webui.json
+packages/bot/.env
+packages/bot/logs
+packages/bot/qrcode.png

@@ -6,11 +6,14 @@ import {
   entryTemplate,
   pkgTemplate,
   readmeTemplate,
+  napcatStartScriptTemplate,
+  napcatReadmeTemplate,
   type TemplateType,
   type PackageManager,
   templateTypes,
   packageManagers,
 } from '../templates'
+import { writeOnebotConfig, writeDockerCompose, DEFAULT_ONEBOT_PORT } from '../napcat'
 
 interface InitAnswers {
   dir: string
@@ -18,6 +21,7 @@ interface InitAnswers {
   includeWebhook: boolean
   installDeps: boolean
   packageManager: PackageManager
+  withNapCat: boolean
 }
 
 function isInteractive (): boolean {
@@ -30,7 +34,8 @@ export function initCommand (): Command {
     .argument('[dir]', 'target directory')
     .option('-t, --template <type>', `entry template type (${templateTypes.join('|')})`)
     .option('-y, --yes', 'skip prompts and use defaults')
-    .action(async (dirArg: string | undefined, options: { template?: string, yes?: boolean }) => {
+    .option('--with-napcat', 'include NapCat integration (docker-compose + onebot config + start script)')
+    .action(async (dirArg: string | undefined, options: { template?: string, yes?: boolean, withNapcat?: boolean }) => {
       let answers: InitAnswers
       if (options.yes || !isInteractive()) {
         answers = {
@@ -39,6 +44,7 @@ export function initCommand (): Command {
           includeWebhook: false,
           installDeps: false,
           packageManager: 'npm',
+          withNapCat: options.withNapcat ?? false,
         }
       } else {
         answers = await inquirer.prompt<InitAnswers>([
@@ -70,6 +76,12 @@ export function initCommand (): Command {
           },
           {
             type: 'confirm',
+            name: 'withNapCat',
+            message: 'Include NapCat integration (one-click full bot)?',
+            default: options.withNapcat ?? false,
+          },
+          {
+            type: 'confirm',
             name: 'installDeps',
             message: 'Install dependencies now?',
             default: true,
@@ -91,6 +103,18 @@ export function initCommand (): Command {
       await fs.writeFile(path.join(target, 'package.json'), pkgTemplate(name, type, pm))
       await fs.writeFile(path.join(target, 'README.md'), readmeTemplate(pm))
 
+      if (answers.withNapCat) {
+        await writeOnebotConfig(target, { port: DEFAULT_ONEBOT_PORT, token: '' })
+        await writeDockerCompose(target, DEFAULT_ONEBOT_PORT)
+        await fs.writeFile(path.join(target, '.env'), `AURORAX_WS_URL=ws://localhost:${DEFAULT_ONEBOT_PORT}\nAURORAX_WS_TOKEN=\n`)
+        const scripts = napcatStartScriptTemplate(pm, entryName)
+        const scriptsDir = path.join(target, 'scripts')
+        await fs.mkdir(scriptsDir, { recursive: true })
+        await fs.writeFile(path.join(scriptsDir, 'start.sh'), scripts.sh, { mode: 0o755 })
+        await fs.writeFile(path.join(scriptsDir, 'start.ps1'), scripts.ps1)
+        await fs.writeFile(path.join(target, 'NAPCAT.md'), napcatReadmeTemplate())
+      }
+
       const runDev = pm === 'npm' || pm === 'bun' ? 'run dev' : 'dev'
 
       console.log('\n  aurorax project ready!')
@@ -106,6 +130,9 @@ export function initCommand (): Command {
       console.log('')
       if (answers.includeWebhook) {
         console.log('  Webhook endpoint: /webhook/github (POST)')
+      }
+      if (answers.withNapCat) {
+        console.log('  NapCat: bunx aurorax napcat install && bash scripts/start.sh')
       }
     })
 }

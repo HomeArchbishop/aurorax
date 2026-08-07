@@ -1,0 +1,17 @@
+{
+  "name": "@aurorax/aurorax-bot",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "aurorax": "*"
+  },
+  "scripts": {
+    "setup": "bun scripts/setup.mjs",
+    "start": "bun scripts/start.mjs",
+    "dev": "bun scripts/dev.mjs",
+    "start:bot": "bun run src/index.ts",
+    "dev:bot": "bun --watch src/index.ts",
+    "napcat:logs": "docker compose logs -f napcat"
+  }
+}

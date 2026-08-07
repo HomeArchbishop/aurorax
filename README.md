@@ -82,6 +82,21 @@ bunx aurorax dev            # 监听 ./index.js
 bunx aurorax dev app        # 监听 ./app.js
 ```
 
+### `aurorax napcat`
+
+集成 [NapCat](https://github.com/NapNeko/NapCatQQ)（OneBot 11 协议端），一键合并为完整 Bot。
+
+```bash
+bunx aurorax init --with-napcat my-bot   # 初始化时集成 NapCat
+bunx aurorax napcat install              # 安装 NapCat（默认 docker，--native 原生）
+bunx aurorax napcat config -p 3001       # 写入 onebot11.json 预置配置
+bunx aurorax napcat start                # 启动 NapCat 服务
+```
+
+`init --with-napcat` 会额外生成：`docker-compose.yml`、`napcat/config/onebot11.json`（WS 服务端 :3001 预置，免 WebUI 配置）、`.env`、`scripts/start.sh|ps1` 一键启动脚本。
+
+> 需要完整开箱体验？仓库内置 [@aurorax/aurorax-bot](./packages/bot)（`packages/bot`），预置全部结构与编排脚本，一行 `bun run bot:setup && bun run bot:start` 拉起 NapCat + Bot。
+
 ---
 
 ## 快速开始

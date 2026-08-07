@@ -1,0 +1,10 @@
+node_modules
+dist
+logs
+.env
+napcat/QQ
+napcat/config/napcat.json
+napcat/config/webui.json
+qrcode.png
+*.log
+.DS_Store
