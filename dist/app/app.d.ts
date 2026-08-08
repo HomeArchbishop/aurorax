@@ -7,6 +7,11 @@ interface AppOptions {
         type: OnebotBridgeType;
         url: string;
         token?: string;
+        timeout?: number;
+        reconnect?: {
+            maxAttempts?: number;
+            retryIntervalMs?: number;
+        };
     };
     webhook?: {
         port: number;

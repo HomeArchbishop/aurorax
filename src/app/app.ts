@@ -8,11 +8,18 @@ import { logger } from '@/internal/logger'
 import { ensureType } from '@/internal/utils/misc'
 import type { Spec } from '@/internal/cron'
 
+const DEFAULT_RECONNECT = { maxAttempts: Infinity, retryIntervalMs: 3000 }
+
 interface AppOptions {
   onebot: {
     type: OnebotBridgeType
     url: string
     token?: string
+    timeout?: number
+    reconnect?: {
+      maxAttempts?: number
+      retryIntervalMs?: number
+    }
   }
   webhook?: {
     port: number
@@ -37,9 +44,14 @@ export class App implements Application {
       type: onebot.type,
       url: onebot.url,
       token: onebot.token,
+      timeout: onebot.timeout,
+      reconnect: {
+        maxAttempts: onebot.reconnect?.maxAttempts ?? DEFAULT_RECONNECT.maxAttempts,
+        retryIntervalMs: onebot.reconnect?.retryIntervalMs ?? DEFAULT_RECONNECT.retryIntervalMs,
+      },
     })
     this.#webhookServer = new WebhookServer({
-      port: webhook?.port ?? 3000,
+      port: webhook?.port ?? (Number(process.env.AURORAX_WEBHOOK_PORT) ?? 3000),
       tokens: webhook?.tokens ?? [],
     })
 

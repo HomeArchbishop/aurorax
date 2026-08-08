@@ -6,6 +6,8 @@
   "license": "AGPL-3.0",
   "private": false,
   "dependencies": {
+    "commander": "^14",
+    "inquirer": "^14.0.2",
     "node-schedule": "^2.1.1",
     "winston": "^3.17.0",
     "winston-daily-rotate-file": "^5.0.0",
@@ -24,6 +26,10 @@
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17"
   },
+  "bin": {
+    "aurorax": "dist/cli/index.js"
+  },
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "dev": "tsc --watch & tsc-alias --watch",
     "check": "knip",

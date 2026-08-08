@@ -33,7 +33,54 @@ bun add aurorax
 
 ---
 
+## CLI 工具
+
+Aurorax 附带命令行工具，帮助你快速创建和运行 Bot 项目。
+
+```bash
+bunx aurorax --help
+```
+
+### `aurorax init`
+
+```bash
+bunx aurorax init                # 进入交互向导
+bunx aurorax init my-bot         # 指定目录
+bunx aurorax init -t ts my-bot   # 指定 TS 模板
+bunx aurorax init -y my-bot      # 跳过提示，使用默认值
+```
+
+向导包含以下选项：
+
+- **Project directory** — 项目目录（默认 `.`）
+- **Select entry template** — `js` / `ts` 模板
+- **Select package manager** — `npm` / `pnpm` / `yarn` / `bun`
+- **Include a sample webhook handler?** — 是否生成 Webhook 示例
+- **Install dependencies now?** — 是否立即安装依赖
+
+### `aurorax start`
+
+启动 Bot，加载入口文件
+
+```bash
+bunx aurorax start          # 加载 ./index.js
+bunx aurorax start app      # 加载 ./app.js（自动补全扩展名）
+```
+
+### `aurorax dev`
+
+监听模式启动，文件变更后自动重启。
+
+```bash
+bunx aurorax dev            # 监听 ./index.js
+bunx aurorax dev app        # 监听 ./app.js
+```
+
+---
+
 ## 快速开始
+
+
 
 ### 1. 创建应用实例
 
@@ -48,6 +95,8 @@ const app = new App({
   }
 })
 ```
+
+
 
 ### 2. 添加中间件
 
@@ -70,6 +119,8 @@ app.useMw(async (ctx, next) => {
 })
 ```
 
+
+
 ### 3. 启动
 
 ```typescript
@@ -78,17 +129,25 @@ await app.start()
 
 ---
 
+
+
 ## 核心 API
+
+
 
 ### `new App(options)`
 
-| 选项 | 类型 | 说明 |
-|------|------|------|
-| `onebot.type` | `'ws-reverse'` | OneBot 连接方式 |
-| `onebot.url` | `string` | WebSocket 地址 |
-| `onebot.token` | `string?` | 鉴权 Token（可选） |
-| `webhook.port` | `number?` | Webhook 监听端口（默认 3000） |
-| `webhook.tokens` | `string[]?` | Webhook 鉴权 Token 列表 |
+
+| 选项               | 类型             | 说明                    |
+| ---------------- | -------------- | --------------------- |
+| `onebot.type`    | `'ws-reverse'` | OneBot 连接方式           |
+| `onebot.url`     | `string`       | WebSocket 地址          |
+| `onebot.token`   | `string?`      | 鉴权 Token（可选）          |
+| `webhook.port`   | `number?`      | Webhook 监听端口（默认 3000） |
+| `webhook.tokens` | `string[]?`    | Webhook 鉴权 Token 列表   |
+
+
+
 
 ### `app.useMw(middleware)`
 
@@ -101,6 +160,8 @@ type Middleware = (
 ) => Promise<void>
 ```
 
+
+
 ### `app.useJob(spec, job)`
 
 注册 cron 定时任务。`spec` 为标准 5 字段 cron 表达式。
@@ -111,6 +172,8 @@ app.useJob('0 9 * * *', async (ctx) => {
   // ctx.event.spec — cron 表达式
 })
 ```
+
+
 
 ### `app.useWebhook(webhookId, handler)`
 
@@ -124,13 +187,19 @@ app.useWebhook('github', async (ctx) => {
 })
 ```
 
+
+
 ### `app.start()`
 
 建立 OneBot WebSocket 连接，启动 cron 调度器，并在注册了 webhook 处理器时启动 HTTP 服务器。
 
 ---
 
+
+
 ## 使用示例
+
+
 
 ### 错误处理中间件
 
@@ -143,6 +212,8 @@ app.useMw(async (ctx, next) => {
   }
 })
 ```
+
+
 
 ### 限流中间件工厂
 
@@ -163,6 +234,8 @@ function rateLimit(maxPerMinute: number) {
 
 app.useMw(rateLimit(10))
 ```
+
+
 
 ### Webhook 接收 GitHub Push
 
@@ -187,36 +260,3 @@ await app.start()
 
 ---
 
-## 项目结构
-
-```
-src/
-├── app/                    # App 主类
-├── interfaces/             # 公开类型定义
-│   ├── onebot/             # OneBot 事件 & API 类型
-│   ├── cron/               # Cron 事件类型
-│   ├── webhook/            # Webhook 事件类型
-│   └── facade/             # 用户侧 Middleware/Job/Webhook 类型
-└── internal/               # 内部实现（不暴露）
-    ├── onebot-bridge/      # WebSocket 连接管理
-    ├── pipelines/          # 中间件/任务/Webhook 管道
-    ├── triggers/           # 事件触发器
-    ├── webhook-server/     # HTTP 服务器
-    └── cron/               # Cron 调度器
-```
-
----
-
-## 文档
-
-[快速开始](https://homearchbishop.github.io/aurorax/tutorial/01-getting-started) - 从零搭建第一个 Bot
-
-[API 参考](https://homearchbishop.github.io/aurorax/api/)
-
-[参与开发](https://homearchbishop.github.io/aurorax/dev/architecture-overview)
-
----
-
-## 许可证
-
-[AGPL-3.0](./LICENSE)
