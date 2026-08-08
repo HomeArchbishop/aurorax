@@ -1,1 +1,0 @@
-{"version":3,"file":"interface.d.ts","sourceRoot":"","sources":["../../src/llm/interface.ts"],"names":[],"mappings":"AAAA,MAAM,MAAM,WAAW,GAAG,QAAQ,GAAG,aAAa,CAAA;AAElD,MAAM,WAAW,eAAe;IAC9B,IAAI,EAAE,QAAQ,GAAG,MAAM,GAAG,WAAW,CAAA;IACrC,OAAO,EAAE,MAAM,CAAA;CAChB;AAED,MAAM,WAAW,GAAG;CAAG"}
