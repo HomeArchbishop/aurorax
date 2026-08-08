@@ -33,16 +33,6 @@ bun add aurorax
 
 Aurorax 附带命令行工具，帮助你快速创建和运行 Bot 项目。
 
-> **要求**：CLI 命令依赖 [Bun](https://bun.sh/)
-
-### 安装
-
-```bash
-bun add -d aurorax   # 或 npm install -D aurorax
-```
-
-安装后即可使用 `aurorax` 命令：
-
 ```bash
 bunx aurorax --help
 ```
