@@ -2,7 +2,6 @@ import { WebSocket } from 'ws';
 import { logger } from '../../../internal/logger';
 import { OnebotApiCallbackHub } from '../onebot-api-callback-hub';
 import EventEmitter from 'events';
-const DEFAULT_RECONNECT = { maxAttempts: Infinity, retryIntervalMs: 3000 };
 export const WsReverseOnebotBridge = class WsReverseOnebotBridge extends EventEmitter {
     #config;
     #ws;
@@ -84,7 +83,7 @@ export const WsReverseOnebotBridge = class WsReverseOnebotBridge extends EventEm
         });
     }
     #scheduleReconnect() {
-        const { maxAttempts = DEFAULT_RECONNECT.maxAttempts, retryIntervalMs = DEFAULT_RECONNECT.retryIntervalMs } = this.#config.reconnect ?? {};
+        const { maxAttempts, retryIntervalMs } = this.#config.reconnect;
         if (this.#reconnectAttempts >= maxAttempts) {
             logger.error(`ws to onebot reconnect exhausted after ${this.#reconnectAttempts} attempts`);
             return;
