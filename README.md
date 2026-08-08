@@ -1,6 +1,10 @@
-[License: AGPL-3.0](./LICENSE)
-[TypeScript](https://www.typescriptlang.org/)
-[Bun](https://bun.sh/)
+<div align="center">
+    <img src="./docs/public/aurorax-header.png" alt="Aurorax" width="100%">
+</div>
+
+[![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge)](./LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge)](https://www.typescriptlang.org/)
+[![Bun](https://img.shields.io/badge/Bun-339933?style=for-the-badge)](https://bun.sh/)
 
 基于 [OneBot 11](https://github.com/botuniverse/onebot-11) 协议的 Node.js Bot 开发框架，采用类 Koa 中间件模式，以极低心智负担构建功能丰富的聊天机器人。
 
