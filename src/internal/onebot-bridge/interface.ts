@@ -18,9 +18,9 @@ export interface OnebotBridgeConfig<BridgeType extends OnebotBridgeType> {
   url: string
   token?: string
   timeout?: number
-  reconnect?: {
-    maxAttempts?: number
-    retryIntervalMs?: number
+  reconnect: {
+    maxAttempts: number
+    retryIntervalMs: number
   }
 }
 

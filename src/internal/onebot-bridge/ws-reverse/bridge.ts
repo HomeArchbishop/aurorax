@@ -5,14 +5,12 @@ import type { CtxSend, OnebotBridge, OnebotBridgeConfig, OnebotBridgeConstructor
 import { OnebotApiCallbackHub } from '../onebot-api-callback-hub'
 import EventEmitter from 'events'
 
-const DEFAULT_RECONNECT = { maxAttempts: Infinity, retryIntervalMs: 3000 }
-
 export const WsReverseOnebotBridge: OnebotBridgeConstructor =
 class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
   #config: OnebotBridgeConfig<'ws-reverse'>
   #ws?: WebSocket
   #onebotApiCallbackHub = new OnebotApiCallbackHub()
-  #reconnectTimer?: NodeJS.Timeout
+  #reconnectTimer?: number
   #reconnectAttempts = 0
   #manualClose = false
 
@@ -102,8 +100,7 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
   }
 
   #scheduleReconnect (): void {
-    const { maxAttempts = DEFAULT_RECONNECT.maxAttempts, retryIntervalMs = DEFAULT_RECONNECT.retryIntervalMs } =
-      this.#config.reconnect ?? {}
+    const { maxAttempts, retryIntervalMs } = this.#config.reconnect
     if (this.#reconnectAttempts >= maxAttempts) {
       logger.error(`ws to onebot reconnect exhausted after ${this.#reconnectAttempts} attempts`)
       return
@@ -113,6 +110,6 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
     logger.warn(`ws to onebot reconnecting in ${delay}ms (attempt ${this.#reconnectAttempts})`)
     this.#reconnectTimer = setTimeout(() => {
       this.#connect().catch(err => logger.error('ws reconnect failed: ' + err.message))
-    }, delay)
+    }, delay) as unknown as number
   }
 }
