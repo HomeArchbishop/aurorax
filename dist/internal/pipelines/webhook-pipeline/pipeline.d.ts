@@ -1,7 +1,7 @@
-import type { Webhook } from '@/interfaces/facade';
+import type { Webhook } from '../../../interfaces/facade';
 import type { EventMeta, Pipeline } from '../interface';
-import type { WebhookEvent } from '@/interfaces/webhook';
-import type { OnebotBridge } from '@/internal/onebot-bridge';
+import type { WebhookEvent } from '../../../interfaces/webhook';
+import type { OnebotBridge } from '../../../internal/onebot-bridge';
 interface WebhookPipelineOptions {
     onebotBridge: OnebotBridge;
     meta: {

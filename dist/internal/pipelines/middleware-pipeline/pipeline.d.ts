@@ -1,7 +1,7 @@
-import type { OnebotEvent } from '@/interfaces/onebot';
+import type { OnebotEvent } from '../../../interfaces/onebot';
 import type { EventMeta, Pipeable, Pipeline } from '../interface';
-import type { Middleware } from '@/interfaces/facade';
-import type { OnebotBridge } from '@/internal/onebot-bridge';
+import type { Middleware } from '../../../interfaces/facade';
+import type { OnebotBridge } from '../../../internal/onebot-bridge';
 interface MiddlewarePipelineOptions {
     onebotBridge: OnebotBridge;
     meta: {

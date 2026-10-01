@@ -1,5 +1,5 @@
 import { WebSocket } from 'ws';
-import { logger } from '@/internal/logger';
+import { logger } from '../../../internal/logger';
 import { OnebotApiCallbackHub } from '../onebot-api-callback-hub';
 import EventEmitter from 'events';
 export const WsReverseOnebotBridge = class WsReverseOnebotBridge extends EventEmitter {

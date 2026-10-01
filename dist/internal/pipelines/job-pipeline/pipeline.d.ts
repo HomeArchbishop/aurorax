@@ -1,7 +1,7 @@
-import type { CronEvent } from '@/interfaces/cron';
-import type { Job } from '@/interfaces/facade';
+import type { CronEvent } from '../../../interfaces/cron';
+import type { Job } from '../../../interfaces/facade';
 import type { EventMeta, Pipeline } from '../interface';
-import type { OnebotBridge } from '@/internal/onebot-bridge';
+import type { OnebotBridge } from '../../../internal/onebot-bridge';
 interface JobPipelineOptions {
     onebotBridge: OnebotBridge;
     meta: {

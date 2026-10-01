@@ -1,7 +1,7 @@
-import type { OnebotEvent } from '@/interfaces/onebot/event';
-import type { CtxSend } from '@/internal/onebot-bridge/interface';
-import type { CronEvent } from '@/interfaces/cron';
-import type { WebhookEvent } from '@/interfaces/webhook';
+import type { OnebotEvent } from '../../interfaces/onebot/event';
+import type { CtxSend } from '../../internal/onebot-bridge/interface';
+import type { CronEvent } from '../../interfaces/cron';
+import type { WebhookEvent } from '../../interfaces/webhook';
 export interface Context<E extends OnebotEvent | CronEvent | WebhookEvent> {
     readonly send: CtxSend;
     readonly event: E;

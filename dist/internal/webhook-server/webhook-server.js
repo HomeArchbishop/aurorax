@@ -3,6 +3,7 @@ import http from 'http';
 import EventEmitter from 'events';
 export class WebhookServer extends EventEmitter {
     #isStarted = false;
+    #server;
     #port;
     #tokens;
     constructor({ port, tokens }) {
@@ -18,6 +19,9 @@ export class WebhookServer extends EventEmitter {
             });
             req.on('end', () => {
                 resolve(Buffer.concat(chunks).buffer);
+            });
+            req.on('error', (err) => {
+                reject(err);
             });
         });
     }
@@ -47,9 +51,18 @@ export class WebhookServer extends EventEmitter {
                     .end(await response.text());
             }
         });
+        this.#server = server;
         server.listen(this.#port);
         logger.debug('webhook server started');
         this.#isStarted = true;
+    }
+    stop() {
+        if (!this.#isStarted)
+            return;
+        this.#server?.close();
+        this.#server = undefined;
+        this.#isStarted = false;
+        logger.debug('webhook server stopped');
     }
     async #handleWebhook(req, url) {
         if (!this.#auth(req.headers)) {

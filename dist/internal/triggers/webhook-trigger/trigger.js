@@ -1,5 +1,5 @@
-import { uid } from '@/internal/utils/misc';
-import { logger } from '@/internal/logger';
+import { uid } from '../../../internal/utils/misc';
+import { logger } from '../../../internal/logger';
 export class WebhookTrigger {
     #started = false;
     #pipelineGroups = [];

@@ -1,4 +1,4 @@
-import { ensureType, withName } from '@/internal/utils/misc';
+import { ensureType, withName } from '../internal/utils/misc';
 export function createMiddleware(...args) {
     const name = args.length === 2 ? String(args[0]) : args[0]?.name || 'anonymous';
     const middleware = args.length === 2 ? args[1] : args[0];

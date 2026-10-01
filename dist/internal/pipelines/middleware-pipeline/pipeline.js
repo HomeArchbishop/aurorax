@@ -1,5 +1,5 @@
-import { logger } from '@/internal/logger';
-import { once } from '@/internal/utils/functional';
+import { logger } from '../../../internal/logger';
+import { once } from '../../../internal/utils/functional';
 export class MiddlewarePipeline {
     #middleware;
     #onebotBridge;

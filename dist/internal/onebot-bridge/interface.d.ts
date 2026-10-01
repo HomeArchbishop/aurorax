@@ -1,4 +1,4 @@
-import type { ApiResponseStatus, ApiActionName, ApiResponse, ApiRequest, OnebotEvent } from '@/interfaces/onebot';
+import type { ApiResponseStatus, ApiActionName, ApiResponse, ApiRequest, OnebotEvent } from '../../interfaces/onebot';
 import type EventEmitter from 'events';
 export type OnebotBridgeType = 'ws-reverse';
 export type OnebotApiResCallback<S extends ApiResponseStatus = ApiResponseStatus, T extends ApiActionName = ApiActionName> = (res: Omit<ApiResponse<S, T>, 'echo'>) => void;
