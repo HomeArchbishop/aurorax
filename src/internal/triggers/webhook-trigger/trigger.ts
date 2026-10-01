@@ -18,6 +18,7 @@ export class WebhookTrigger implements Trigger<WebhookEvent> {
   }> = []
 
   #webhookServer: WebhookServer
+  #listener?: (event: WebhookEvent) => void
 
   constructor ({ webhookServer }: WebhookTriggerOptions) {
     this.#webhookServer = webhookServer
@@ -39,7 +40,7 @@ export class WebhookTrigger implements Trigger<WebhookEvent> {
       throw new Error('webhook trigger is already started')
     }
     this.#started = true
-    this.#webhookServer.addWebhookEventListener(event => {
+    this.#listener = (event: WebhookEvent) => {
       let executed = false
       this.#pipelineGroups.forEach(({ pipeline, condition }) => {
         if (!condition(event)) { return }
@@ -53,7 +54,18 @@ export class WebhookTrigger implements Trigger<WebhookEvent> {
         // will be handled by the webhook server (when the server emits 'webhook-event' event)
         throw new Error(`webhook ${event.webhookId} not found`)
       }
-    })
+    }
+    this.#webhookServer.addWebhookEventListener(this.#listener)
     logger.debug('webhook trigger started')
+  }
+
+  stop (): void {
+    if (!this.#started) return
+    if (this.#listener) {
+      this.#webhookServer.off('webhook-event', this.#listener)
+      this.#listener = undefined
+    }
+    this.#started = false
+    logger.debug('webhook trigger stopped')
   }
 }

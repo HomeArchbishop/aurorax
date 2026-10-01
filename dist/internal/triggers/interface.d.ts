@@ -12,5 +12,9 @@ export interface Trigger<E> {
      * Start the trigger
      */
     start(): void;
+    /**
+     * Stop the trigger
+     */
+    stop(): void;
 }
 //# sourceMappingURL=interface.d.ts.map

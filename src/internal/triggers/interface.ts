@@ -14,4 +14,9 @@ export interface Trigger<E> {
    * Start the trigger
    */
   start (): void
+
+  /**
+   * Stop the trigger
+   */
+  stop (): void
 }

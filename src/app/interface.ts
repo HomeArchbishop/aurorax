@@ -5,4 +5,5 @@ export interface Application {
   useJob (spec: string, job: Job): this
   useWebhook (webhookId: string, webhook: Webhook): this
   start (): Promise<void>
+  stop (): void
 }

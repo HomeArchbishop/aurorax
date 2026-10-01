@@ -1,4 +1,4 @@
-import type { Spec } from '../../internal/cron';
+import type { Spec } from '@/internal/cron';
 export interface CronEvent {
     spec: Spec;
     timestamp: number;

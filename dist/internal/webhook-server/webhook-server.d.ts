@@ -1,4 +1,4 @@
-import type { WebhookEvent } from '../../interfaces/webhook/event';
+import type { WebhookEvent } from '@/interfaces/webhook/event';
 import EventEmitter from 'events';
 interface WebhookServerOptions {
     port: number;

@@ -1,4 +1,4 @@
-import { logger } from '../../../internal/logger';
+import { logger } from '@/internal/logger';
 export class WebhookPipeline {
     #webhook;
     #onebotBridge;

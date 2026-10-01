@@ -12,6 +12,7 @@
     "ws": "^8.18.1"
   },
   "devDependencies": {
+    "@types/bun": "^1.4.2",
     "@types/node": "^24.3.0",
     "@types/node-schedule": "^2.1.7",
     "@types/ws": "^8.18.0",
@@ -24,6 +25,7 @@
     "vitepress": "^1.6.4",
     "vitepress-plugin-mermaid": "^2.0.17"
   },
+  "files": ["dist", "README.md", "LICENSE"],
   "scripts": {
     "dev": "tsc --watch & tsc-alias --watch",
     "check": "knip",

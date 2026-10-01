@@ -1,6 +1,6 @@
-import { logger } from '../../../internal/logger';
-import { queueUntil } from '../../../internal/utils/functional';
-import { uid } from '../../../internal/utils/misc';
+import { logger } from '@/internal/logger';
+import { queueUntil } from '@/internal/utils/functional';
+import { uid } from '@/internal/utils/misc';
 export class OnebotTrigger {
     #started = false;
     #pipelineGroups = [];
@@ -26,5 +26,11 @@ export class OnebotTrigger {
         }
         this.#started = true;
         logger.debug('onebot trigger started');
+    }
+    stop() {
+        if (!this.#started)
+            return;
+        this.#started = false;
+        logger.debug('onebot trigger stopped');
     }
 }

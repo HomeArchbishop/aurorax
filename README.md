@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="./docs/public/aurorax-header.png" alt="Aurorax" width="100%">
+    <img src="https://raw.githubusercontent.com/HomeArchbishop/aurorax/main/docs/public/aurorax-header.png" alt="Aurorax" width="100%">
 </div>
 
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue?style=for-the-badge)](./LICENSE)
@@ -18,6 +18,7 @@
 - **完整类型支持** — 完整的 TypeScript 类型定义，IDE 友好
 - **链式 API** — 流畅的链式调用风格 `app.useMw(...).useMw(...).useJob(...)`
 - **日志系统** — 内置 Winston 日志，支持按日滚动文件
+- **断线重连** — OneBot WebSocket 自动指数退避重连
 
 ---
 
@@ -44,8 +45,17 @@ const app = new App({
   onebot: {
     type: 'ws-reverse',
     url: 'ws://localhost:8080',
-    token: 'your-token'  // 可选
-  }
+    token: 'your-token', // 可选
+    timeout: 8000, // 可选，连接超时 ms
+    reconnect: { // 可选
+      maxAttempts: Infinity,
+      retryIntervalMs: 3000,
+    },
+  },
+  webhook: {
+    port: 3000,
+    tokens: [],
+  },
 })
 ```
 
@@ -87,8 +97,13 @@ await app.start()
 | `onebot.type` | `'ws-reverse'` | OneBot 连接方式 |
 | `onebot.url` | `string` | WebSocket 地址 |
 | `onebot.token` | `string?` | 鉴权 Token（可选） |
-| `webhook.port` | `number?` | Webhook 监听端口（默认 3000） |
+| `onebot.timeout` | `number?` | 连接超时 ms（默认 `8000`） |
+| `onebot.reconnect.maxAttempts` | `number?` | 最大重连次数（默认 `Infinity`） |
+| `onebot.reconnect.retryIntervalMs` | `number?` | 重连基础间隔 ms（默认 `3000`，指数退避） |
+| `webhook.port` | `number?` | Webhook 监听端口（默认 `3000`） |
 | `webhook.tokens` | `string[]?` | Webhook 鉴权 Token 列表 |
+| `logger.level` | `string?` | 日志级别（默认 `silly`） |
+| `logger.dir` | `string?` | 日志文件目录（默认 `logs`） |
 
 ### `app.useMw(middleware)`
 
@@ -127,6 +142,10 @@ app.useWebhook('github', async (ctx) => {
 ### `app.start()`
 
 建立 OneBot WebSocket 连接，启动 cron 调度器，并在注册了 webhook 处理器时启动 HTTP 服务器。
+
+### `app.stop()`
+
+停止 cron / webhook，关闭 OneBot 连接并停止自动重连。之后可再次调用 `app.start()`。
 
 ---
 

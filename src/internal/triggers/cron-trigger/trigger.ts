@@ -4,6 +4,7 @@ import type { CronEvent } from '@/interfaces/cron'
 import { scheduleJob, type Spec } from '@/internal/cron'
 import { logger } from '@/internal/logger'
 import { uid } from '@/internal/utils/misc'
+import type { Job } from 'node-schedule'
 
 export class CronTrigger implements Trigger<CronEvent> {
   #started = false
@@ -14,6 +15,7 @@ export class CronTrigger implements Trigger<CronEvent> {
   }> = []
 
   #specs = new Set<Spec>()
+  #jobs: Job[] = []
 
   connect (pipeline: Pipeline<CronEvent>, branchSpec: string): void {
     if (this.#started) {
@@ -35,7 +37,7 @@ export class CronTrigger implements Trigger<CronEvent> {
     this.#started = true
     this.#specs.forEach(spec => {
       logger.debug(`cron trigger using spec: ${spec} for triggering pipelines`)
-      scheduleJob(spec, async () => {
+      this.#jobs.push(scheduleJob(spec, async () => {
         const event: CronEvent = {
           spec,
           timestamp: Date.now(),
@@ -47,8 +49,16 @@ export class CronTrigger implements Trigger<CronEvent> {
           // no need to await here, leave it async
           pipeline.execute(event, meta).catch(() => null)
         })
-      })
+      }))
     })
     logger.debug('cron trigger started')
+  }
+
+  stop (): void {
+    if (!this.#started) return
+    this.#jobs.forEach(job => job.cancel())
+    this.#jobs = []
+    this.#started = false
+    logger.debug('cron trigger stopped')
   }
 }

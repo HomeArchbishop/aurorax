@@ -10,6 +10,7 @@ interface WebhookServerOptions {
 
 export class WebhookServer extends EventEmitter {
   #isStarted: boolean = false
+  #server?: http.Server
 
   #port: number
   #tokens: string[]
@@ -28,6 +29,9 @@ export class WebhookServer extends EventEmitter {
       })
       req.on('end', () => {
         resolve(Buffer.concat(chunks).buffer)
+      })
+      req.on('error', (err) => {
+        reject(err)
       })
     })
   }
@@ -59,9 +63,18 @@ export class WebhookServer extends EventEmitter {
           .end(await response.text())
       }
     })
+    this.#server = server
     server.listen(this.#port)
     logger.debug('webhook server started')
     this.#isStarted = true
+  }
+
+  stop (): void {
+    if (!this.#isStarted) return
+    this.#server?.close()
+    this.#server = undefined
+    this.#isStarted = false
+    logger.debug('webhook server stopped')
   }
 
   async #handleWebhook (req: http.IncomingMessage, url: URL) {

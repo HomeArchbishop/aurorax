@@ -6,6 +6,9 @@ export class OnebotApiCallbackHub {
     delete(echo) {
         this.#apiResCallbacks.delete(echo);
     }
+    clear() {
+        this.#apiResCallbacks.clear();
+    }
     trigger(echo, res) {
         const [okCb, failedCb] = this.#apiResCallbacks.get(echo) ?? [];
         this.#apiResCallbacks.delete(echo);

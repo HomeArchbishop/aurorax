@@ -1,9 +1,10 @@
-import { uid } from '../../../internal/utils/misc';
-import { logger } from '../../../internal/logger';
+import { uid } from '@/internal/utils/misc';
+import { logger } from '@/internal/logger';
 export class WebhookTrigger {
     #started = false;
     #pipelineGroups = [];
     #webhookServer;
+    #listener;
     constructor({ webhookServer }) {
         this.#webhookServer = webhookServer;
     }
@@ -22,7 +23,7 @@ export class WebhookTrigger {
             throw new Error('webhook trigger is already started');
         }
         this.#started = true;
-        this.#webhookServer.addWebhookEventListener(event => {
+        this.#listener = (event) => {
             let executed = false;
             this.#pipelineGroups.forEach(({ pipeline, condition }) => {
                 if (!condition(event)) {
@@ -38,7 +39,18 @@ export class WebhookTrigger {
                 // will be handled by the webhook server (when the server emits 'webhook-event' event)
                 throw new Error(`webhook ${event.webhookId} not found`);
             }
-        });
+        };
+        this.#webhookServer.addWebhookEventListener(this.#listener);
         logger.debug('webhook trigger started');
+    }
+    stop() {
+        if (!this.#started)
+            return;
+        if (this.#listener) {
+            this.#webhookServer.off('webhook-event', this.#listener);
+            this.#listener = undefined;
+        }
+        this.#started = false;
+        logger.debug('webhook trigger stopped');
     }
 }
