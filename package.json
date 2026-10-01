@@ -5,6 +5,10 @@
   "main": "dist/index.js",
   "license": "AGPL-3.0",
   "private": false,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HomeArchbishop/aurorax.git"
+  },
   "dependencies": {
     "node-schedule": "^2.1.1",
     "winston": "^3.17.0",
@@ -30,6 +34,7 @@
     "dev": "tsc --watch & tsc-alias --watch",
     "check": "knip",
     "build": "knip && tsc --build && tsc-alias",
+    "prepublishOnly": "bun run build",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs"

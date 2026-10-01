@@ -1,1 +1,0 @@
-export { OnebotApiCallbackHub } from './hub';

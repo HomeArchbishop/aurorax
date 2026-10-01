@@ -1,1 +1,0 @@
-export { OnebotTrigger } from './trigger';

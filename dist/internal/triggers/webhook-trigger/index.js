@@ -1,1 +1,0 @@
-export { WebhookTrigger } from './trigger';
