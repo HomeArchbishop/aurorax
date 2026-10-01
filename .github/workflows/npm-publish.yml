@@ -16,10 +16,14 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
 
+      # No registry-url: it writes empty _authToken and blocks OIDC.
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          registry-url: 'https://registry.npmjs.org'
+          # staged publishing needs Node >= 22.14 and npm >= 11.15
+          node-version: '22.14'
+
+      - name: Upgrade npm for stage publish
+        run: npm install -g npm@^11.15.0
 
       - run: bun install
 
@@ -30,6 +34,5 @@ jobs:
 
       - run: bun run build
 
-      # Stage-only / trusted publishing: CI uploads to stage queue;
-      # a maintainer must then approve with 2FA (npmjs.com or `npm stage approve`).
+      # OIDC trusted publishing → stage queue; approve later with 2FA.
       - run: npm stage publish --access public
