@@ -47,4 +47,10 @@ export class OnebotTrigger implements Trigger<OnebotEvent> {
     this.#started = true
     logger.debug('onebot trigger started')
   }
+
+  stop (): void {
+    if (!this.#started) return
+    this.#started = false
+    logger.debug('onebot trigger stopped')
+  }
 }

@@ -124,11 +124,11 @@ export interface GetStrangerInfoResponseData {
     sex: 'male' | 'female' | 'unknown';
     age: number;
 }
-export interface GetFriendListResponseData {
+export type GetFriendListResponseData = Array<{
     user_id: number;
     nickname: string;
     remark: string;
-}
+}>;
 export interface GetGroupInfoResponseData {
     group_id: number;
     group_name: string;

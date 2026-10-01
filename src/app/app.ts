@@ -4,11 +4,9 @@ import { type OnebotBridge, type OnebotBridgeType, createOnebotBridge } from '@/
 import type { Job, Middleware, Webhook } from '@/interfaces/facade'
 import { WebhookTrigger, OnebotTrigger, CronTrigger } from '@/internal/triggers'
 import { MiddlewarePipeline, JobPipeline, WebhookPipeline } from '@/internal/pipelines'
-import { logger } from '@/internal/logger'
+import { configureLogger, logger, type LoggerOptions } from '@/internal/logger'
 import { ensureType } from '@/internal/utils/misc'
 import type { Spec } from '@/internal/cron'
-
-const DEFAULT_RECONNECT = { maxAttempts: Infinity, retryIntervalMs: 3000 }
 
 interface AppOptions {
   onebot: {
@@ -25,6 +23,7 @@ interface AppOptions {
     port: number
     tokens: string[]
   }
+  logger?: LoggerOptions
 }
 
 export class App implements Application {
@@ -39,19 +38,17 @@ export class App implements Application {
   readonly #jobPipelines: JobPipeline[] = []
   readonly #webhookPipelines: WebhookPipeline[] = []
 
-  constructor ({ onebot, webhook }: AppOptions) {
+  constructor ({ onebot, webhook, logger: loggerOptions }: AppOptions) {
+    configureLogger(loggerOptions)
     this.#onebotBridge = createOnebotBridge({
       type: onebot.type,
       url: onebot.url,
       token: onebot.token,
       timeout: onebot.timeout,
-      reconnect: {
-        maxAttempts: onebot.reconnect?.maxAttempts ?? DEFAULT_RECONNECT.maxAttempts,
-        retryIntervalMs: onebot.reconnect?.retryIntervalMs ?? DEFAULT_RECONNECT.retryIntervalMs,
-      },
+      reconnect: onebot.reconnect,
     })
     this.#webhookServer = new WebhookServer({
-      port: webhook?.port ?? (Number(process.env.AURORAX_WEBHOOK_PORT) ?? 3000),
+      port: webhook?.port ?? 3000,
       tokens: webhook?.tokens ?? [],
     })
 
@@ -131,5 +128,13 @@ export class App implements Application {
     this.#onebotTrigger.start()
     this.#cronTrigger.start()
     this.#webhookTrigger.start()
+  }
+
+  stop (): void {
+    this.#onebotTrigger.stop()
+    this.#cronTrigger.stop()
+    this.#webhookTrigger.stop()
+    this.#webhookServer.stop()
+    this.#onebotBridge.closeConnectionToOnebot()
   }
 }

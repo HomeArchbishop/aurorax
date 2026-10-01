@@ -1,4 +1,4 @@
-import type { ApiResponseStatus, ApiActionName, ApiResponse, ApiRequest, OnebotEvent } from '../../interfaces/onebot';
+import type { ApiResponseStatus, ApiActionName, ApiResponse, ApiRequest, OnebotEvent } from '@/interfaces/onebot';
 import type EventEmitter from 'events';
 export type OnebotBridgeType = 'ws-reverse';
 export type OnebotApiResCallback<S extends ApiResponseStatus = ApiResponseStatus, T extends ApiActionName = ApiActionName> = (res: Omit<ApiResponse<S, T>, 'echo'>) => void;
@@ -8,9 +8,9 @@ export interface OnebotBridgeConfig<BridgeType extends OnebotBridgeType> {
     url: string;
     token?: string;
     timeout?: number;
-    reconnect: {
-        maxAttempts: number;
-        retryIntervalMs: number;
+    reconnect?: {
+        maxAttempts?: number;
+        retryIntervalMs?: number;
     };
 }
 export interface OnebotBridgeConstructor {
@@ -31,5 +31,9 @@ export interface OnebotBridge extends EventEmitter {
      * Establish the connection to the Onebot
      */
     establishConnectionToOnebot(): Promise<void>;
+    /**
+     * Close the connection to the Onebot and stop auto-reconnect
+     */
+    closeConnectionToOnebot(): void;
 }
 //# sourceMappingURL=interface.d.ts.map

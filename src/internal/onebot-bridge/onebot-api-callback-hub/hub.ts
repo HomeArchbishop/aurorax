@@ -22,6 +22,10 @@ export class OnebotApiCallbackHub {
     this.#apiResCallbacks.delete(echo)
   }
 
+  clear (): void {
+    this.#apiResCallbacks.clear()
+  }
+
   trigger (echo: string, res: ApiResponse): void {
     const [okCb, failedCb] = this.#apiResCallbacks.get(echo) ?? []
     this.#apiResCallbacks.delete(echo)

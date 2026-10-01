@@ -1,10 +1,11 @@
-import { scheduleJob } from '../../../internal/cron';
-import { logger } from '../../../internal/logger';
-import { uid } from '../../../internal/utils/misc';
+import { scheduleJob } from '@/internal/cron';
+import { logger } from '@/internal/logger';
+import { uid } from '@/internal/utils/misc';
 export class CronTrigger {
     #started = false;
     #pipelineGroups = [];
     #specs = new Set();
+    #jobs = [];
     connect(pipeline, branchSpec) {
         if (this.#started) {
             throw new Error('cron trigger is already started, cannot connect more pipelines');
@@ -24,7 +25,7 @@ export class CronTrigger {
         this.#started = true;
         this.#specs.forEach(spec => {
             logger.debug(`cron trigger using spec: ${spec} for triggering pipelines`);
-            scheduleJob(spec, async () => {
+            this.#jobs.push(scheduleJob(spec, async () => {
                 const event = {
                     spec,
                     timestamp: Date.now(),
@@ -38,8 +39,16 @@ export class CronTrigger {
                     // no need to await here, leave it async
                     pipeline.execute(event, meta).catch(() => null);
                 });
-            });
+            }));
         });
         logger.debug('cron trigger started');
+    }
+    stop() {
+        if (!this.#started)
+            return;
+        this.#jobs.forEach(job => job.cancel());
+        this.#jobs = [];
+        this.#started = false;
+        logger.debug('cron trigger stopped');
     }
 }
