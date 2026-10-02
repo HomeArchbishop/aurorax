@@ -39,6 +39,12 @@ export class App extends EventEmitter implements Application {
   readonly #jobPipelines: JobPipeline[] = []
   readonly #webhookPipelines: WebhookPipeline[] = []
 
+  readonly #info: {
+    middlewares: { name: string; index: number }[]
+    jobs: { name: string; index: number; spec: Spec }[]
+    webhooks: { name: string; webhookId: string }[]
+  } = { middlewares: [], jobs: [], webhooks: [] }
+
   constructor ({ onebot, webhook, logger: loggerOptions }: AppOptions) {
     super()
     configureLogger(loggerOptions)
@@ -89,6 +95,7 @@ export class App extends EventEmitter implements Application {
     }
     // save pipeline
     this.#middlewarePipelines.push(pipeline)
+    this.#info.middlewares.push({ name: mw.name, index: this.#middlewarePipelines.length - 1 })
     return this
   }
 
@@ -107,6 +114,7 @@ export class App extends EventEmitter implements Application {
     this.#cronTrigger.connect(pipeline, spec)
     // save pipeline
     this.#jobPipelines.push(pipeline)
+    this.#info.jobs.push({ name: job.name, index: this.#jobPipelines.length - 1, spec })
     return this
   }
 
@@ -123,7 +131,16 @@ export class App extends EventEmitter implements Application {
     this.#webhookTrigger.connect(pipeline, webhookId)
     // save pipeline
     this.#webhookPipelines.push(pipeline)
+    this.#info.webhooks.push({ name: webhook.name, webhookId })
     return this
+  }
+
+  info () {
+    return {
+      middlewares: this.#info.middlewares.slice(),
+      jobs: this.#info.jobs.slice(),
+      webhooks: this.#info.webhooks.slice(),
+    }
   }
 
   async start (): Promise<void> {

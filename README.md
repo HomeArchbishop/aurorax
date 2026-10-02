@@ -139,6 +139,14 @@ app.useWebhook('github', async (ctx) => {
 })
 ```
 
+### `app.info()`
+
+返回已注册的 middleware / job / webhook 快照（按注册顺序）。匿名函数的 `name` 可能为空字符串。
+
+```typescript
+const { middlewares, jobs, webhooks } = app.info()
+```
+
 ### `app.start()`
 
 建立 OneBot WebSocket 连接，启动 cron 调度器，并在注册了 webhook 处理器时启动 HTTP 服务器。
