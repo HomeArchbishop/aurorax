@@ -2,6 +2,12 @@ import { WebSocket } from 'ws'
 import { logger } from '@/internal/logger'
 import type { OnebotEvent, ApiResponse, ApiResponseStatus } from '@/interfaces/onebot'
 import type { CtxSend, OnebotBridge, OnebotBridgeConfig, OnebotBridgeConstructor, OnebotApiResCallback } from '../interface'
+import type {
+  ConnectedEvent,
+  ConnectionLostEvent,
+  DisconnectedEvent,
+  ReconnectingEvent,
+} from '@/interfaces/facade'
 import { OnebotApiCallbackHub } from '../onebot-api-callback-hub'
 import EventEmitter from 'events'
 
@@ -79,9 +85,11 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
     this.#ws = ws
 
     ws.addEventListener('open', () => {
+      const reconnected = this.#reconnectAttempts > 0
       this.#pendingConnect = undefined
       this.#reconnectAttempts = 0
       logger.debug('ws to onebot connected')
+      this.emit('connected', { reconnected } satisfies ConnectedEvent)
       resolve()
     })
 
@@ -92,11 +100,17 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
     })
 
     ws.addEventListener('close', () => {
-      if (this.#ws !== ws) return
+      // Superseded by a newer socket (reconnect replace).
+      if (this.#ws !== undefined && this.#ws !== ws) return
       this.#ws = undefined
       this.#onebotApiCallbackHub.clear()
       logger.warn('ws to onebot closed')
-      if (!this.#manualClose) this.#scheduleReconnect()
+      // Temporary drop → `reconnecting` only; `disconnected` is terminal.
+      if (this.#manualClose) {
+        this.emit('disconnected', { manual: true } satisfies DisconnectedEvent)
+        return
+      }
+      this.#scheduleReconnect()
     })
 
     ws.addEventListener('message', ({ data: wsMsgData }) => {
@@ -133,9 +147,11 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
     const ws = this.#ws
     if (!ws) return
     this.#ws = undefined
-    ws.removeAllListeners()
+    // Keep listeners so `close` can emit lifecycle `disconnected`.
     if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
       ws.close()
+    } else {
+      ws.removeAllListeners()
     }
   }
 
@@ -147,16 +163,19 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
 
   #scheduleReconnect (): void {
     this.#clearReconnectTimer()
-    const maxAttempts = this.#config.reconnect?.maxAttempts ?? Infinity
+    const maxAttempts = this.#config.reconnect?.maxAttempts ?? 3
     const retryIntervalMs = this.#config.reconnect?.retryIntervalMs ?? 3000
     if (this.#reconnectAttempts >= maxAttempts) {
       logger.error(`ws to onebot reconnect exhausted after ${this.#reconnectAttempts} attempts`)
       this.#manualClose = true
+      this.emit('disconnected', { manual: false } satisfies DisconnectedEvent)
+      this.emit('connection-lost', { attempts: this.#reconnectAttempts } satisfies ConnectionLostEvent)
       return
     }
     this.#reconnectAttempts++
     const delay = retryIntervalMs * Math.pow(2, Math.min(this.#reconnectAttempts - 1, 5))
     logger.warn(`ws to onebot reconnecting in ${delay}ms (attempt ${this.#reconnectAttempts})`)
+    this.emit('reconnecting', { attempt: this.#reconnectAttempts, delayMs: delay } satisfies ReconnectingEvent)
     this.#reconnectTimer = setTimeout(() => {
       this.#reconnectTimer = undefined
       this.#connect().catch(err => logger.error('ws reconnect failed: ' + err.message))

@@ -47,8 +47,8 @@ const app = new App({
     url: 'ws://localhost:8080',
     token: 'your-token', // 可选
     timeout: 8000, // 可选，连接超时 ms
-    reconnect: { // 可选
-      maxAttempts: Infinity,
+    reconnect: { // 可选，默认重连 3 次
+      maxAttempts: 3,
       retryIntervalMs: 3000,
     },
   },
@@ -98,7 +98,7 @@ await app.start()
 | `onebot.url` | `string` | WebSocket 地址 |
 | `onebot.token` | `string?` | 鉴权 Token（可选） |
 | `onebot.timeout` | `number?` | 连接超时 ms（默认 `8000`） |
-| `onebot.reconnect.maxAttempts` | `number?` | 最大重连次数（默认 `Infinity`） |
+| `onebot.reconnect.maxAttempts` | `number?` | 最大重连次数（默认 `3`） |
 | `onebot.reconnect.retryIntervalMs` | `number?` | 重连基础间隔 ms（默认 `3000`，指数退避） |
 | `webhook.port` | `number?` | Webhook 监听端口（默认 `3000`） |
 | `webhook.tokens` | `string[]?` | Webhook 鉴权 Token 列表 |
@@ -142,6 +142,41 @@ app.useWebhook('github', async (ctx) => {
 ### `app.start()`
 
 建立 OneBot WebSocket 连接，启动 cron 调度器，并在注册了 webhook 处理器时启动 HTTP 服务器。
+
+### `app.on(lifecycle, listener)`
+
+Aurorax ↔ OneBot **连接**的生命周期（`EventEmitter`），不是 OneBot 协议里的 `meta_event` / 业务消息。后者仍由 `useMw` 处理：
+
+| 事件 | 时机 | payload |
+|------|------|---------|
+| `connected` | WebSocket 就绪（含重连成功） | `{ reconnected: boolean }` |
+| `disconnected` | 连接终结（`app.stop()` 或重连耗尽）；重试过程中不触发 | `{ manual: boolean }`（`app.stop()` 时为 `true`） |
+| `reconnecting` | 意外断开后即将重连 | `{ attempt: number, delayMs: number }` |
+| `connection-lost` | 重连次数耗尽（同时会发 `disconnected`） | `{ attempts: number }` |
+
+```typescript
+import type {
+  ConnectedEvent,
+  DisconnectedEvent,
+  ReconnectingEvent,
+  ConnectionLostEvent,
+} from 'aurorax'
+
+app.on('connected', (e: ConnectedEvent) => {
+  console.log(e.reconnected ? 'reconnected' : 'connected')
+})
+app.on('disconnected', (e: DisconnectedEvent) => {
+  if (!e.manual) console.warn('connection dropped')
+})
+app.on('reconnecting', (e: ReconnectingEvent) => {
+  console.warn(`reconnect #${e.attempt} in ${e.delayMs}ms`)
+})
+app.on('connection-lost', (e: ConnectionLostEvent) => {
+  console.error(`gave up after ${e.attempts} attempts`)
+})
+```
+
+业务 OneBot 消息仍只走中间件链，不会出现在这些事件里。
 
 ### `app.stop()`
 

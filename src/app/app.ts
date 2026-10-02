@@ -1,12 +1,13 @@
 import { WebhookServer } from '@/internal/webhook-server'
 import type { Application } from './interface'
 import { type OnebotBridge, type OnebotBridgeType, createOnebotBridge } from '@/internal/onebot-bridge'
-import type { Job, Middleware, Webhook } from '@/interfaces/facade'
+import { APP_LIFECYCLE_EVENTS, type Job, type Middleware, type Webhook } from '@/interfaces/facade'
 import { WebhookTrigger, OnebotTrigger, CronTrigger } from '@/internal/triggers'
 import { MiddlewarePipeline, JobPipeline, WebhookPipeline } from '@/internal/pipelines'
 import { configureLogger, logger, type LoggerOptions } from '@/internal/logger'
 import { ensureType } from '@/internal/utils/misc'
 import type { Spec } from '@/internal/cron'
+import EventEmitter from 'events'
 
 interface AppOptions {
   onebot: {
@@ -26,7 +27,7 @@ interface AppOptions {
   logger?: LoggerOptions
 }
 
-export class App implements Application {
+export class App extends EventEmitter implements Application {
   readonly #onebotBridge: OnebotBridge
   readonly #webhookServer: WebhookServer
 
@@ -39,6 +40,7 @@ export class App implements Application {
   readonly #webhookPipelines: WebhookPipeline[] = []
 
   constructor ({ onebot, webhook, logger: loggerOptions }: AppOptions) {
+    super()
     configureLogger(loggerOptions)
     this.#onebotBridge = createOnebotBridge({
       type: onebot.type,
@@ -47,6 +49,11 @@ export class App implements Application {
       timeout: onebot.timeout,
       reconnect: onebot.reconnect,
     })
+    for (const event of APP_LIFECYCLE_EVENTS) {
+      this.#onebotBridge.on(event, (payload: unknown) => {
+        this.emit(event, payload)
+      })
+    }
     this.#webhookServer = new WebhookServer({
       port: webhook?.port ?? 3000,
       tokens: webhook?.tokens ?? [],
