@@ -1,24 +1,25 @@
-import { WebSocket } from 'ws'
+import { WebSocket, WebSocketServer } from 'ws'
 import { logger } from '@/internal/logger'
-import type { OnebotEvent, ApiResponse, ApiResponseStatus } from '@/interfaces/onebot'
+import type { OnebotEvent, ApiResponseStatus } from '@/interfaces/onebot'
 import type { CtxSend, OnebotBridge, OnebotBridgeConfig, OnebotBridgeConstructor, OnebotApiResCallback } from '../interface'
 import type {
   ConnectedEvent,
-  ConnectionLostEvent,
   DisconnectedEvent,
   ReconnectingEvent,
 } from '@/interfaces/facade'
 import { OnebotApiCallbackHub } from '../onebot-api-callback-hub'
+import { handleRawWsMessage } from '../share'
 import EventEmitter from 'events'
 
-export const WsReverseOnebotBridge: OnebotBridgeConstructor =
+export const WsReverseOnebotBridge: OnebotBridgeConstructor<'ws-reverse'> =
 class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
   #config: OnebotBridgeConfig<'ws-reverse'>
+  #wss?: WebSocketServer
   #ws?: WebSocket
   #onebotApiCallbackHub = new OnebotApiCallbackHub()
-  #reconnectTimer?: ReturnType<typeof setTimeout>
-  #reconnectAttempts = 0
   #manualClose = false
+  #everConnected = false
+  #reconnectAttempt = 0
   #pendingConnect?: {
     resolve: (value: void | PromiseLike<void>) => void
     reject: (reason?: unknown) => void
@@ -45,17 +46,18 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
       resOkCb as OnebotApiResCallback<ApiResponseStatus.OK>,
       resFailedCb as OnebotApiResCallback<ApiResponseStatus.FAILED>,
     )
-    logger.debug(`ws sending with echo:${echo}: ` + raw)
-    logger.silly(`ws sending with echo:${echo}: ` + JSON.stringify(echoReq, null, 2))
+    logger.debug(`ws-reverse sending with echo:${echo}: ` + raw)
+    logger.silly(`ws-reverse sending with echo:${echo}: ` + JSON.stringify(echoReq, null, 2))
     this.#ws.send.bind(this.#ws)(raw)
-    logger.debug(`ws sent with echo:${echo}`)
+    logger.debug(`ws-reverse sent with echo:${echo}`)
   }
 
   async establishConnectionToOnebot (): Promise<void> {
     this.#manualClose = false
-    this.#clearReconnectTimer()
+    this.#reconnectAttempt = 0
     try {
-      await this.#connect()
+      await this.#ensureServer()
+      await this.#waitForClient()
     } catch (err) {
       this.closeConnectionToOnebot()
       throw err
@@ -64,90 +66,132 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
 
   closeConnectionToOnebot (): void {
     this.#manualClose = true
-    this.#clearReconnectTimer()
-    this.#reconnectAttempts = 0
-    this.#teardownWs()
+    this.#reconnectAttempt = 0
+    this.#everConnected = false
+    this.#rejectPending(new Error('The connection (ws-reverse) was closed'))
+    this.#teardownClient()
+    this.#teardownServer()
   }
 
-  async #connect (): Promise<void> {
-    this.#teardownWs()
+  #parseListenTarget () {
+    const u = new URL(this.#config.url)
+    const host = u.hostname || '0.0.0.0'
+    const port = u.port
+      ? Number(u.port)
+      : (u.protocol === 'wss:' ? 443 : 80)
+    const path = u.pathname || '/'
+    return { host, port, path }
+  }
 
-    const { resolve, reject, promise } = Promise.withResolvers<void>()
-    this.#pendingConnect = { resolve, reject }
-    const timeout = this.#config.timeout ?? 8000
-
-    const ws = new WebSocket(this.#config.url, {
-      timeout,
-      headers: {
-        Authorization: this.#config.token ? `Bearer ${this.#config.token}` : '',
+  async #ensureServer (): Promise<void> {
+    if (this.#wss) return
+    const { host, port, path } = this.#parseListenTarget()
+    const token = this.#config.token
+    const wss = new WebSocketServer({
+      host,
+      port,
+      path,
+      verifyClient: (info, done) => {
+        if (!token) {
+          done(true)
+          return
+        }
+        done(info.req.headers.authorization === `Bearer ${token}`)
       },
     })
+    this.#wss = wss
+    wss.on('connection', (ws) => {
+      this.#onConnection(ws)
+    })
+
+    await new Promise<void>((resolve, reject) => {
+      const onListening = () => {
+        wss.off('error', onError)
+        resolve()
+      }
+      const onError = (err: Error) => {
+        wss.off('listening', onListening)
+        this.#wss = undefined
+        reject(err)
+      }
+      wss.once('listening', onListening)
+      wss.once('error', onError)
+    })
+
+    logger.debug(`ws-reverse listening on ws://${host}:${port}${path}`)
+  }
+
+  #waitForClient (): Promise<void> {
+    if (this.#ws && this.#ws.readyState === WebSocket.OPEN) {
+      return Promise.resolve()
+    }
+    const { resolve, reject, promise } = Promise.withResolvers<void>()
+    this.#pendingConnect = { resolve, reject }
+    logger.debug('ws-reverse waiting for OneBot client (no timeout)')
+    return promise
+  }
+
+  #onConnection (ws: WebSocket): void {
+    if (this.#manualClose) {
+      ws.close()
+      return
+    }
+    if (this.#ws && this.#ws.readyState === WebSocket.OPEN) {
+      logger.warn('ws-reverse rejecting extra connection (keep existing)')
+      ws.close()
+      return
+    }
+
+    const reconnected = this.#everConnected
+    this.#everConnected = true
+    this.#reconnectAttempt = 0
     this.#ws = ws
+    this.#attachClient(ws)
 
-    ws.addEventListener('open', () => {
-      const reconnected = this.#reconnectAttempts > 0
+    logger.debug('ws-reverse onebot connected')
+    this.emit('connected', { reconnected } satisfies ConnectedEvent)
+
+    const pending = this.#pendingConnect
+    if (pending) {
       this.#pendingConnect = undefined
-      this.#reconnectAttempts = 0
-      logger.debug('ws to onebot connected')
-      this.emit('connected', { reconnected } satisfies ConnectedEvent)
-      resolve()
+      pending.resolve()
+    }
+  }
+
+  #attachClient (ws: WebSocket): void {
+    ws.on('message', (data) => {
+      handleRawWsMessage(data, this.#onebotApiCallbackHub, (event) => {
+        this.emit('onebot-event', event)
+      })
     })
 
-    ws.addEventListener('error', (err) => {
-      this.#pendingConnect = undefined
-      logger.error('ws to onebot error: ' + err.message)
-      reject(new Error('WebSocket error: ' + err.message))
+    ws.on('error', (err) => {
+      logger.error('ws-reverse client error: ' + err.message)
     })
 
-    ws.addEventListener('close', () => {
-      // Superseded by a newer socket (reconnect replace).
+    ws.on('close', () => {
       if (this.#ws !== undefined && this.#ws !== ws) return
       this.#ws = undefined
       this.#onebotApiCallbackHub.clear()
-      logger.warn('ws to onebot closed')
-      // Temporary drop → `reconnecting` only; `disconnected` is terminal.
+      logger.warn('ws-reverse onebot closed')
       if (this.#manualClose) {
         this.emit('disconnected', { manual: true } satisfies DisconnectedEvent)
         return
       }
-      this.#scheduleReconnect()
+      this.#reconnectAttempt++
+      logger.warn(`ws-reverse waiting for reconnect (attempt ${this.#reconnectAttempt})`)
+      this.emit('reconnecting', {
+        attempt: this.#reconnectAttempt,
+        delayMs: 0,
+      } satisfies ReconnectingEvent)
     })
-
-    ws.addEventListener('message', ({ data: wsMsgData }) => {
-      const hash = Math.random().toString(36).slice(2, 10)
-      const raw = String(wsMsgData)
-      logger.debug(`ws received ws_msg#${hash}: ` + raw)
-      let parsed: OnebotEvent | ApiResponse
-      try {
-        parsed = JSON.parse(raw) as OnebotEvent | ApiResponse
-      } catch (err) {
-        logger.error(`ws_msg#${hash} failed to parse: ` + (err as Error).message)
-        return
-      }
-      logger.silly(`parsed ws_msg#${hash}: ` + JSON.stringify(parsed, null, 2))
-      if (Object.prototype.hasOwnProperty.call(parsed, 'status')) {
-        logger.debug(`ws_msg#${hash} is an ApiResponse, calling callback (if any)`)
-        const res = parsed as ApiResponse
-        this.#onebotApiCallbackHub.trigger(res.echo, res)
-        return
-      }
-      const event = parsed as OnebotEvent
-      this.emit('onebot-event', event)
-    })
-
-    return promise
   }
 
-  #teardownWs (): void {
-    if (this.#pendingConnect) {
-      this.#pendingConnect.reject(new Error('The connection (ws-reverse) was closed'))
-      this.#pendingConnect = undefined
-    }
+  #teardownClient (): void {
     this.#onebotApiCallbackHub.clear()
     const ws = this.#ws
     if (!ws) return
     this.#ws = undefined
-    // Keep listeners so `close` can emit lifecycle `disconnected`.
     if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
       ws.close()
     } else {
@@ -155,30 +199,17 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
     }
   }
 
-  #clearReconnectTimer (): void {
-    if (this.#reconnectTimer === undefined) return
-    clearTimeout(this.#reconnectTimer)
-    this.#reconnectTimer = undefined
+  #teardownServer (): void {
+    const wss = this.#wss
+    if (!wss) return
+    this.#wss = undefined
+    wss.close()
   }
 
-  #scheduleReconnect (): void {
-    this.#clearReconnectTimer()
-    const maxAttempts = this.#config.reconnect?.maxAttempts ?? 3
-    const retryIntervalMs = this.#config.reconnect?.retryIntervalMs ?? 3000
-    if (this.#reconnectAttempts >= maxAttempts) {
-      logger.error(`ws to onebot reconnect exhausted after ${this.#reconnectAttempts} attempts`)
-      this.#manualClose = true
-      this.emit('disconnected', { manual: false } satisfies DisconnectedEvent)
-      this.emit('connection-lost', { attempts: this.#reconnectAttempts } satisfies ConnectionLostEvent)
-      return
-    }
-    this.#reconnectAttempts++
-    const delay = retryIntervalMs * Math.pow(2, Math.min(this.#reconnectAttempts - 1, 5))
-    logger.warn(`ws to onebot reconnecting in ${delay}ms (attempt ${this.#reconnectAttempts})`)
-    this.emit('reconnecting', { attempt: this.#reconnectAttempts, delayMs: delay } satisfies ReconnectingEvent)
-    this.#reconnectTimer = setTimeout(() => {
-      this.#reconnectTimer = undefined
-      this.#connect().catch(err => logger.error('ws reconnect failed: ' + err.message))
-    }, delay)
+  #rejectPending (err: Error): void {
+    const pending = this.#pendingConnect
+    if (!pending) return
+    this.#pendingConnect = undefined
+    pending.reject(err)
   }
 }

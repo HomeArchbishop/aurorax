@@ -11,7 +11,7 @@
 ```typescript
 const app = new App({
   onebot: {
-    type: 'ws-reverse',
+    type: 'ws',
     url: 'ws://localhost:8080'
   },
   webhook: {

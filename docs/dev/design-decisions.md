@@ -65,9 +65,9 @@ const ctx: Context<OnebotEvent> = {
 
 ## `App` 直接创建具体实现，不做依赖注入
 
-`App` 的构造函数根据 `options.onebot.type` 直接创建 `WsReverseOnebotBridge` 的具体实例，而不是通过接口注入。
+`App` 的构造函数根据 `options.onebot.type` 经 `createOnebotBridge` 创建具体 Bridge（`ws` → `WsOnebotBridge`，`ws-reverse` → `WsReverseOnebotBridge`），而不是通过 DI 容器注入。
 
-这是有意为之的取舍：框架目前只有一种 OneBot 接入方式（`ws-reverse`），引入 DI 容器或工厂抽象只会增加复杂度，带来的灵活性没有实际用处。如果将来需要支持更多接入方式，再做抽象也不迟——代码现在的结构（`createOnebotBridge` 工厂函数 + `OnebotBridgeType` 字面量联合类型）已经预留了这个扩展点。
+这是有意为之的取舍：接入方式种类有限，工厂 + `OnebotBridgeType` 字面量联合已足够扩展；引入 DI 容器只会增加复杂度。
 
 ## 管道层统一吞掉异常
 

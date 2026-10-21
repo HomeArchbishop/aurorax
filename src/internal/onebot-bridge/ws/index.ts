@@ -1,0 +1,1 @@
+export { WsOnebotBridge } from './bridge'

@@ -255,7 +255,7 @@ interface OnebotBridge extends EventEmitter {
 }
 ```
 
-目前唯一实现是 `WsReverseOnebotBridge`（`src/internal/onebot-bridge/ws-reverse/bridge.ts`）。
+实现：`WsOnebotBridge`（正向客户端，`ws/`）与 `WsReverseOnebotBridge`（反向服务端，`ws-reverse/`）。
 
 ### `Pipeline<E>` 和 `Pipeable<E>`（`src/internal/pipelines/interface.ts`）
 

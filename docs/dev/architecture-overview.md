@@ -7,13 +7,13 @@ Aurorax 由三条独立的事件处理通道组成，分别对应 OneBot 消息�
 ```mermaid
 graph TB
     subgraph "外部来源"
-        Onebot["OneBot 实现\n(ws-reverse)"]
+        Onebot["OneBot 实现\n(ws / ws-reverse)"]
         HttpClient["HTTP 客户端\n(GitHub 等)"]
     end
 
     subgraph "App"
         subgraph "接入层"
-            OnebotBridge["WsReverseOnebotBridge\n建立 WS 连接\n解析事件 / 发送 API"]
+            OnebotBridge["OnebotBridge\n(ws 客户端 / ws-reverse 服务端)\n解析事件 / 发送 API"]
             WebhookServer["WebhookServer\n监听 HTTP POST\n鉴权 + 构造 WebhookEvent"]
             CronInternal["node-schedule\n(内部依赖)"]
         end
@@ -65,7 +65,7 @@ graph TB
 
 | 组件 | 职责 |
 |------|------|
-| `WsReverseOnebotBridge` | 建立 WebSocket 连接；区分入站消息（OneBot 事件 vs API 响应）；管理 API 回调 |
+| `WsOnebotBridge` / `WsReverseOnebotBridge` | 正向客户端或反向服务端；区分入站消息（事件 vs API 响应）；管理 API 回调 |
 | `WebhookServer` | 监听 HTTP；鉴权（`Authorization` 请求头）；构造 `WebhookEvent`；通过 EventEmitter 分发 |
 | `node-schedule`（内部） | `CronTrigger` 的底层调度依赖，不直接暴露给外部 |
 
@@ -108,7 +108,7 @@ src/
 ├── app/                       App 主类 + Application 接口
 ├── interfaces/                公开类型（OnebotEvent、CronEvent、WebhookEvent、Context、Middleware 等）
 └── internal/
-    ├── onebot-bridge/         WsReverseOnebotBridge + OnebotApiCallbackHub
+    ├── onebot-bridge/         WsOnebotBridge / WsReverseOnebotBridge + OnebotApiCallbackHub
     ├── webhook-server/        WebhookServer
     ├── triggers/              OnebotTrigger / CronTrigger / WebhookTrigger + Trigger 接口
     ├── pipelines/             MiddlewarePipeline / JobPipeline / WebhookPipeline + Pipeline 接口

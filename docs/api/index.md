@@ -13,7 +13,7 @@ import { App } from 'aurorax'
 
 const app = new App({
   onebot: {
-    type: 'ws-reverse',
+    type: 'ws', // 或 'ws-reverse'
     url: 'ws://localhost:8080/onebot/v11/ws',
     token: 'your-access-token' // 可选
   },
@@ -28,9 +28,11 @@ const app = new App({
 
 | 字段 | 类型 | 必填 | 说明 |
 |------|------|------|------|
-| `onebot.type` | `'ws-reverse'` | 是 | 连接类型，目前仅支持反向 WebSocket |
-| `onebot.url` | `string` | 是 | WebSocket 监听地址 |
+| `onebot.type` | `'ws' \| 'ws-reverse'` | 是 | 正向 / 反向 WebSocket |
+| `onebot.url` | `string` | 是 | WebSocket 地址（`ws` 为 OneBot 端；`ws-reverse` 为本机监听） |
 | `onebot.token` | `string` | 否 | OneBot 鉴权 Token |
+| `onebot.timeout` | `number` | 否 | 连接超时 ms，默认 `8000` |
+| `onebot.reconnect` | `object` | 否 | `maxAttempts` / `retryIntervalMs` |
 | `webhook.port` | `number` | 否 | HTTP 服务器端口，默认 `3000` |
 | `webhook.tokens` | `string[]` | 否 | 允许的鉴权 Token 列表 |
 

@@ -5,7 +5,7 @@
 ```mermaid
 sequenceDiagram
     participant OB as OneBot 实现
-    participant Bridge as WsReverseOnebotBridge
+    participant Bridge as OnebotBridge
     participant OT as OnebotTrigger
     participant MP as MiddlewarePipeline
     participant User as 用户中间件
@@ -26,7 +26,7 @@ sequenceDiagram
     end
 ```
 
-**鉴权**：`App` 向 OneBot 建立 WebSocket 连接时，若配置了 `token`，会在握手请求头中携带 `Authorization: Bearer <token>`。
+**鉴权**：`ws` 模式下 App 连接时携带 `Authorization: Bearer <token>`；`ws-reverse` 模式下在 upgrade 时校验同一请求头。
 
 **事件缓冲**：`OnebotTrigger.connect()` 时用 `queueUntil(() => this.#started, callback)` 包装事件监听器。`start()` 被调用前，所有到达的事件会缓冲在队列中，`start()` 后批量执行，确保不丢弃启动窗口期的事件。
 
@@ -97,7 +97,7 @@ sequenceDiagram
 ```mermaid
 sequenceDiagram
     participant User as 用户代码
-    participant Bridge as WsReverseOnebotBridge
+    participant Bridge as OnebotBridge
     participant Hub as OnebotApiCallbackHub
     participant OB as OneBot 实现
 

@@ -4,6 +4,7 @@
 
 node_modules
 dist
+*.tsbuildinfo
 
 docs/.vitepress/cache
 docs/.vitepress/dist

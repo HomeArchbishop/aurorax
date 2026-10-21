@@ -43,7 +43,7 @@ import { App } from 'aurorax'
 
 const app = new App({
   onebot: {
-    type: 'ws-reverse',
+    type: 'ws',
     url: 'ws://localhost:8080',
     token: 'your-token', // 可选
     timeout: 8000, // 可选，连接超时 ms
@@ -94,7 +94,7 @@ await app.start()
 
 | 选项 | 类型 | 说明 |
 |------|------|------|
-| `onebot.type` | `'ws-reverse'` | OneBot 连接方式 |
+| `onebot.type` | `'ws' \| 'ws-reverse'` | OneBot 连接方式（正向 / 反向 WebSocket） |
 | `onebot.url` | `string` | WebSocket 地址 |
 | `onebot.token` | `string?` | 鉴权 Token（可选） |
 | `onebot.timeout` | `number?` | 连接超时 ms（默认 `8000`） |
@@ -230,7 +230,7 @@ app.useMw(rateLimit(10))
 
 ```typescript
 const app = new App({
-  onebot: { type: 'ws-reverse', url: 'ws://localhost:8080' },
+  onebot: { type: 'ws', url: 'ws://localhost:8080' },
   webhook: { port: 3000, tokens: ['secret'] }
 })
 

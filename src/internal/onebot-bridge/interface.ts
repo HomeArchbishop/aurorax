@@ -1,7 +1,7 @@
 import type { ApiResponseStatus, ApiActionName, ApiResponse, ApiRequest, OnebotEvent } from '@/interfaces/onebot'
 import type EventEmitter from 'events'
 
-export type OnebotBridgeType = 'ws-reverse'
+export type OnebotBridgeType = 'ws' | 'ws-reverse'
 
 export type OnebotApiResCallback<
   S extends ApiResponseStatus = ApiResponseStatus, T extends ApiActionName = ApiActionName,
@@ -24,8 +24,8 @@ export interface OnebotBridgeConfig<BridgeType extends OnebotBridgeType> {
   }
 }
 
-export interface OnebotBridgeConstructor {
-  new (config: OnebotBridgeConfig<OnebotBridgeType>): OnebotBridge
+export interface OnebotBridgeConstructor<B extends OnebotBridgeType = OnebotBridgeType> {
+  new (config: OnebotBridgeConfig<B>): OnebotBridge
 }
 
 export interface OnebotBridge extends EventEmitter {

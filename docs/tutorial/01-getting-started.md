@@ -95,17 +95,27 @@ bun 原生支持 TypeScript，无需额外配置，跳过此步即可。
 
 ## 第二步：连接 OneBot
 
-OneBot 实现需要配置为 **反向 WebSocket（ws-reverse）** 模式，监听你 Bot 程序将要暴露的地址。
+Aurorax 支持 OneBot 11 的两种 WebSocket 模式：
 
-> 以 NapCat 为例，在其配置文件中设置：
+| `onebot.type` | 含义 | 谁监听 |
+|---------------|------|--------|
+| `ws`（正向） | App 作为客户端连到 OneBot | OneBot 实现 |
+| `ws-reverse`（反向） | App 监听，OneBot 连过来 | Aurorax |
+
+入门示例用 **正向 `ws`**：让 OneBot 实现开启正向 WebSocket，Aurorax 连过去。
+
+> 以 NapCat 为例，开启正向 WebSocket，并记下其监听地址（如下仅为示意）：
 > ```json
 > {
->   "wsReverse": {
+>   "websocket": {
 >     "enable": true,
->     "url": "ws://localhost:8080/onebot/v11/ws"
+>     "host": "localhost",
+>     "port": 8080
 >   }
 > }
 > ```
+>
+> 若要用反向：Aurorax 设 `type: 'ws-reverse'` 与监听 `url`，OneBot 端配置反向 WebSocket 指向该地址。
 
 > Aurorax 基于 [OneBot 11 协议](https://github.com/botuniverse/onebot-11)。事件结构、API 列表等协议细节请查阅该文档，本教程系列不重复讲述。
 
@@ -118,8 +128,8 @@ import { App } from 'aurorax'
 
 const app = new App({
   onebot: {
-    type: 'ws-reverse',
-    url: 'ws://localhost:8080/onebot/v11/ws',
+    type: 'ws',
+    url: 'ws://localhost:8080',
     // token: 'your-access-token'  // 若 OneBot 端配置了鉴权则填写
   }
 })
@@ -185,7 +195,7 @@ pnpx tsc && node dist/index.js
                                     中间件 2（回复逻辑）
 ```
 
-1. OneBot 实现（NapCat 等）收到 QQ 消息后，通过反向 WebSocket 将事件推送给 Aurorax
+1. OneBot 实现（NapCat 等）收到 QQ 消息后，通过 WebSocket 将事件推送给 Aurorax
 2. `App` 将事件交给注册的中间件链依次处理
 3. 中间件通过 `ctx.send()` 调用 OneBot API 发送回复
 
