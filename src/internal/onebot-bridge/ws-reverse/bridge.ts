@@ -1,4 +1,5 @@
 import { WebSocket, WebSocketServer } from 'ws'
+import http from 'http'
 import { logger } from '@/internal/logger'
 import type { OnebotEvent, ApiResponseStatus } from '@/interfaces/onebot'
 import type { CtxSend, OnebotBridge, OnebotBridgeConfig, OnebotBridgeConstructor, OnebotApiResCallback } from '../interface'
@@ -14,6 +15,7 @@ import EventEmitter from 'events'
 export const WsReverseOnebotBridge: OnebotBridgeConstructor<'ws-reverse'> =
 class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
   #config: OnebotBridgeConfig<'ws-reverse'>
+  #httpServer?: http.Server
   #wss?: WebSocketServer
   #ws?: WebSocket
   #onebotApiCallbackHub = new OnebotApiCallbackHub()
@@ -83,39 +85,66 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
     return { host, port, path }
   }
 
+  #authorize (req: http.IncomingMessage): boolean {
+    const token = this.#config.token
+    return !token || req.headers.authorization === `Bearer ${token}`
+  }
+
+  #rejectUpgrade (socket: { write: (data: string) => void, destroy: () => void }, status: number, body: string): void {
+    socket.write(
+      `HTTP/1.1 ${status} ${status === 401 ? 'Unauthorized' : 'Not Found'}\r\n` +
+      'Connection: close\r\n' +
+      `Content-Length: ${Buffer.byteLength(body)}\r\n` +
+      '\r\n' +
+      body,
+    )
+    socket.destroy()
+  }
+
   async #ensureServer (): Promise<void> {
     if (this.#wss) return
     const { host, port, path } = this.#parseListenTarget()
-    const token = this.#config.token
-    const wss = new WebSocketServer({
-      host,
-      port,
-      path,
-      verifyClient: (info, done) => {
-        if (!token) {
-          done(true)
-          return
-        }
-        done(info.req.headers.authorization === `Bearer ${token}`)
-      },
+    // Own http upgrade path — avoid ws verifyClient → abortHandshake (Bun: http undefined).
+    const server = http.createServer((_req, res) => {
+      res.writeHead(404).end()
     })
+    const wss = new WebSocketServer({ noServer: true })
+    this.#httpServer = server
     this.#wss = wss
+
+    server.on('upgrade', (req, socket, head) => {
+      const reqPath = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`).pathname
+      if (reqPath !== path) {
+        this.#rejectUpgrade(socket, 404, 'Not Found')
+        return
+      }
+      if (!this.#authorize(req)) {
+        this.#rejectUpgrade(socket, 401, 'Unauthorized')
+        return
+      }
+      wss.handleUpgrade(req, socket, head, (ws) => {
+        wss.emit('connection', ws, req)
+      })
+    })
+
     wss.on('connection', (ws) => {
       this.#onConnection(ws)
     })
 
     await new Promise<void>((resolve, reject) => {
       const onListening = () => {
-        wss.off('error', onError)
+        server.off('error', onError)
         resolve()
       }
       const onError = (err: Error) => {
-        wss.off('listening', onListening)
+        server.off('listening', onListening)
+        this.#httpServer = undefined
         this.#wss = undefined
         reject(err)
       }
-      wss.once('listening', onListening)
-      wss.once('error', onError)
+      server.once('listening', onListening)
+      server.once('error', onError)
+      server.listen(port, host)
     })
 
     logger.debug(`ws-reverse listening on ws://${host}:${port}${path}`)
@@ -201,9 +230,11 @@ class WsReverseOnebotBridge extends EventEmitter implements OnebotBridge {
 
   #teardownServer (): void {
     const wss = this.#wss
-    if (!wss) return
     this.#wss = undefined
-    wss.close()
+    wss?.close()
+    const server = this.#httpServer
+    this.#httpServer = undefined
+    server?.close()
   }
 
   #rejectPending (err: Error): void {
